@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <h1>Задача {{ task.id }}</h1>
+    <form action="get">
+
+    {{ form.title(class="form-control") }}
+    {{ form.description(class="form-control") }}
+    <div class="btn btn-info">Отрпавить</div>
+    </form>
+
+{% endblock %}

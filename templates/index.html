@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% set page = request.view_args.get('board_id') %}
+
+{% block body %}
+    <h1>Доска {{ page }}</h1>
+    <div class="row">
+        <div class="col-8 border-end">
+            <table class="table table-striped ">
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Заголовок</th>
+            <th>Дата создания</th>
+            <th>Исполнитель</th>
+        </tr>
+        </thead>
+        {% for task in tasks %}
+            <tr id="task">
+                <td class="col-auto border-start">{{ loop.index }}</td>
+                <td class="col-auto border-start d-none" id="task_id">{{ task.id }}</td>
+                <td class="col-auto border-start"><a  href="#">{{ task.title }}</a></td>
+                <td class="col-auto border-start">{{ task.created.strftime('%Y-%m-%d') }}</td>
+                <td class="col-auto border-start">{{ task.user.username or ''}}</td>
+            </tr>
+        {% endfor %}
+
+    </table>
+    <div class="fot">FOT</div>
+        </div>
+        <div class="col "> Описание задачи
+            <form id="description_task" action="get">
+                {{ form.title(class="form-control mb-3") }}
+                {{ form.description(class="form-control mb-3") }}
+                {{ form.user(class="form-select mb-3") }}
+            </form>
+            <a href="#" class="btn btn-info">К задаче</a>
+        </div>
+    </div>
+
+{% endblock body%}
+
+    {% block script %}
+        <script>
+        $(function () {
+        let $li = $('li.nav-item'), page = '{{ page }}';
+            $li.each(function () {
+                if ($(this).find('a').attr('href') === '/board/' + page) {
+                    $(this).find('a').addClass('active')
+
+                }
+            })
+            $('tr#task').on('click', function (event) {
+                event.preventDefault()
+                $('#description_task').focus()
+                $(this).addClass('bg-info')
+                p = $('tr#task').not($(this))
+                p.removeClass('bg-info')
+            $.ajax({
+                    url: `/task/${$(this).find('#task_id').text()}`,
+                    method: 'get',
+                    dataType: 'html',
+                    success: function (data) {
+                        const obj = JSON.parse(data);
+                        let title = $('#description_task #title')
+                        title.focus()
+                        title.val(obj.title)
+                        $('#description_task #description').val(obj.description)
+                        $('#description_task #user').val(obj.user_id)
+                    }
+                })
+        })
+        });
+        </script>
+
+        <script type="text/javascript">
+
+        </script>
+
+
+    {% endblock script %}
