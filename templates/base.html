@@ -11,6 +11,16 @@
 {% block nav %}
             {% include 'nav.html' %}
 {% endblock nav%}
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul class="list-group my-3">
+    {% for category, message in messages %}
+        {% set category = 'list-group-item-' + category %}
+      <li class="list-group-item {{ category }}">{{ message }}</li>
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 {% block body %}
     <h1></h1>
 {% endblock body%}

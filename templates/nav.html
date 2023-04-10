@@ -3,16 +3,16 @@
 <nav>
 <ul class="nav nav-tabs">
   <li class="nav-item">
-    <a class="nav-link {{ active }}" href="{{ url_for('.get_board', board_id='Plans') }}">План</a>
+    <a class="nav-link {{ active }}" href="{{ url_for('.index', board_id='Plans') }}">План</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link {{ active }}" href="{{ url_for('.get_board', board_id='Actual') }}">Актуальное</a>
+    <a class="nav-link {{ active }}" href="{{ url_for('.index', board_id='Actual') }}">Актуальное</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link {{ active }}" href="{{ url_for('.get_board', board_id='Release') }}">Релиз</a>
+    <a class="nav-link {{ active }}" href="{{ url_for('.index', board_id='Release') }}">Релиз</a>
   </li>
   <li class="nav-item">
-    <a class="nav-link {{ active }}" href="{{ url_for('.get_board', board_id='Complete')}}">Готово</a>
+    <a class="nav-link {{ active }}" href="{{ url_for('.index', board_id='Complete')}}">Готово</a>
   </li>
 </ul>
     </nav>

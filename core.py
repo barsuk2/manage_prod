@@ -3,3 +3,4 @@ from flask_wtf.csrf import CSRFProtect
 
 db = SQLAlchemy()
 
+csrf = CSRFProtect()

@@ -10,6 +10,7 @@ class Users(db.Model):
     username = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
     password_hash = db.Column(db.String)
+
     task = db.relationship('Task', backref='user')
 
 
@@ -25,19 +26,24 @@ class Task(db.Model):
     task_status = db.Column(db.Enum(*STATUS, name='task_status'))
     stage = db.Column(db.Enum(*STAGE, name='stage'))
     created = db.Column(db.DateTime(timezone=True), server_default=db.text('now()'), nullable=False)
+    deadline = db.Column(db.DateTime(timezone=True), nullable=True)
+    estimate = db.Column(db.Float, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL', onupdate='CASCADE'))
     title = db.Column(db.String)
     description = db.Column(db.String)
-
+    tags = db.Column(ARRAY(db.String), nullable=True)
 
     def return_as_json(self):
         resp = {
+            'id': self.id,
             'board': self.board,
             'task_status': self.task_status,
             'stage': self.stage,
             'user_id': self.user_id,
             'title': self.title,
             'description': self.description,
+            'deadline': self.deadline,
+            'estimate': self.estimate,
                 }
         return resp
 

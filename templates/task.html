@@ -1,12 +1,25 @@
 {% extends 'base.html' %}
+{% set task_id=request.view_args.get('task_id') %}
 
 {% block body %}
     <h1>Задача {{ task.id }}</h1>
-    <form action="get">
-
+    <form method="post" action="{{ url_for('.post_task_', task_id = task_id) }}">
+    {{ form.csrf_token() }}
     {{ form.title(class="form-control") }}
     {{ form.description(class="form-control") }}
-    <div class="btn btn-info">Отрпавить</div>
+    {{ form.user_id(class="form-select") }}
+    <button type="submit" class="btn btn-info">Отравить</button>
+    </form>
+
+
+    <form id="description_task" action="/post_task/100" method="post">
+                <input id="csrf_token" name="csrf_token" type="hidden" value="IjAwNTBjZTA4YjNhZGE5OWE3MmYyMzdhYWE3YTFhNDUzZDYzODM5ZWYi.ZDGuuQ.mIJ6UmyrgiO3n6mmU4grCUItEJg">
+                <input class="form-control mb-3" id="title" name="title" type="text" >
+                <input class="form-control mb-3" id="description" name="description" type="text" >
+                <select class="form-select mb-3" id="user" name="user"></select>
+                {{ form.description(class="form-control") }}
+                <button type="submit" class="btn btn-info">Сохранить</button>
+                <a href="/">aa</a>
     </form>
 
 {% endblock %}
