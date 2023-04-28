@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <div class="container ">
+        <div class="row mt-5 justify-content-center">
+
+            <form class="col-4 border p-3 bg-light" method="POST" action="/login">
+                <h3 class="title">Login</h3>
+                {{ form.csrf_token() }}
+                {{ form.name(class="form-control mb-2") }}
+                {{ form.password(class="form-control mb-2") }}
+                <div class="form-check">
+                    {{ form.remember_my(class="form-check-input") }}
+                    <label class="form-check-label" for="flexCheckDefault">
+                        Запомнить меня
+                    </label>
+                </div>
+                <button class="btn btn-primary">Login</button>
+                <div class="pt-5"><img class="rounded float-start me-2" src="{{ url_for('static', filename='/leopold.png') }}" alt="" width="30%">
+                    В данном примере мы создали метод класса set_x, который устанавливает значение статической
+                    переменной x.
+                    Этот метод может быть вызван как через класс MyClass, так и через его экземпляр obj.
+                    При этом значение переменной x будет общим для всех экземпляров класса.
+                </div>
+            </form>
+
+        </div>
+{% endblock %}
