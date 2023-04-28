@@ -1,0 +1,36 @@
+// Custom.scss
+// команда для генерации css
+// sass /srv/biganto.com/visual/static/admin/bootstrap-5.2.2/bootstrap.scss  /srv/biganto.com/visual/static/admin/bootstrap-5.2.2/bootstrap.css
+
+// Переназначим основные цвета
+$primary: #337ab7;
+$info: #5bc0de;
+
+// Подправим основные параметры для body
+$font-size-base: 0.9rem;
+$link-decoration:  null;
+$display-font-family: null;
+$display-font-style:  null;
+$display-font-weight: 300;
+
+.text-underline-hover {
+    text-decoration: none;
+
+}
+
+ .custom-class {
+
+  }
+
+.text-underline-hover:hover {
+    text-decoration: underline;
+    color: $primary;
+}
+
+@import "/home/egor/.nvm/versions/node/v16.14.0/lib/node_modules/bootstrap/scss/bootstrap.scss";
+
+@include media-breakpoint-up(sm) {
+  .custom-class {
+    margin-bottom: 10px;
+  }
+}

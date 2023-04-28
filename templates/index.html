@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% set page = request.view_args.get('board_id') or 'Actual'%}
+{% set task_id = request.view_args.get('task_id') or 0 %}
+{% block nav %}
+{% include 'nav.html' %}
+{% endblock %}
+{% block body %}
+    <h1>Доска {{ page }}</h1>
+    <div class="row">
+        <div class="col-8 border-end">
+            <table class="table table-striped ">
+        <thead>
+        <tr>
+            <th class="col-auto">#</th>
+            <th class="col-auto">Заголовок</th>
+            <th class="col-1">Теги</th>
+            <th class="col-1">Исполнитель</th>
+            <th class="col-1">Дедлайн</th>
+            <th class="col-1">Естимейт</th>
+            <th class="col-2">Стадия</th>
+        </tr>
+        </thead>
+        {% for task in tasks %}
+            {% if task.stage == 'Dev' %}
+                {% set stage='text-primary' %}
+            {% elif task.stage == 'QA' %}
+                {% set stage='text-warning' %}
+            {% elif task.stage == 'Project' %}
+                {% set stage='text-info' %}
+            {% elif task.stage == 'Review' %}
+                {% set stage='text-success' %}
+            {% else %}
+                {% set stage='d-none' %}
+            {% endif %}
+
+                {% if task_id == task.id %}
+            {% set active = 'bg-info' %}
+            {% endif %}
+            <tr class="{{ active }}" id="task">
+                <td class="col-auto">{{ loop.index }}</td>
+                <td class="border-start d-none" id="task_id">{{ task.id }}</td>
+                <td class="border-start"><a href="{{ url_for('.index', task_id=task.id) }}">{{ task.title }}</a></td>
+                <td class="border-start fs-6">{{ task.tags or ''}}</td>
+                <td class="border-start">{{ task.user.username or ''}}</td>
+                <td class="border-start text-danger">{{ task.deadline.strftime('%d-%m') if task.deadline }}</td>
+                <td class="border-start text-primary">{{ task.estimate or ''}}</td>
+                <td class="border-start text-nowrap">
+                    <span class="fa-stack fa-1x {{ status }}" title="Разработка - dev">
+                        <i class="fa fa-square-o {{ stage }} fa-stack-2x"></i>
+                        <i class="fa fa-play {{ stage }} fa-stack-1x"></i>
+                    </span>
+                    <span class="fa-stack fa-1x {{ status }}" title="Разработка - pause">
+                        <i class="fa fa-square-o {{ stage }} fa-stack-2x"></i>
+                        <i class="fa fa-pause {{ stage }} fa-stack-1x"></i>
+                    </span>
+                        <span class="fa-stack fa-1x {{ status }}" title="Разработка - done">
+                        <i class="fa fa-square-o {{ stage }} fa-stack-2x"></i>
+                        <i class="fa fa-check {{ stage }} fa-stack-1x"></i>
+                    </span>
+                    <span class="fa-stack fa-1x {{ status }}" title="Разработка - call">
+                        <i class="fa fa-square-o {{ stage }} fa-stack-2x"></i>
+                        <i class="fa fa-volume-control-phone {{ stage }} fa-stack-1x"></i>
+                    </span>
+                </td>
+            </tr>
+        {% endfor %}
+
+    </table>
+        </div>
+
+    <div class="col" id="description_task">
+        <ul class="nav nav-tabs">
+            <li class="nav-item">
+                <a class="nav-link active" aria-current="page" href="#" id="task_desc">Описание задачи</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#" id="task_comment">Комментарии</a>
+            </li>
+        </ul>
+            <form class="task" id="task_desc" action="{{ url_for('.index', task_id=task_id) }}" method="post">
+                {{ form.csrf_token() }}
+                <label class="control-label" for="title">Заголовок</label>
+                {{ form.title(class="form-control mb-3") }}
+                <label class="control-label" for="description">Описание задачи</label>
+                {{ form.description(class="form-control mb-3", rows=10) }}
+                <label class="control-label" for="user_id">Исполнитель</label>
+                {{ form.user_id(class="form-select mb-3") }}
+                <label class="control-label" for="deadline">Дейдлайн</label>
+                {{ form.deadline(class="form-control mb-3 text-danger") }}
+                <label class="control-label" for="user_id">Естимейт</label>
+                {{ form.estimate(class="form-control mb-3") }}
+                <label class="control-label" for="user_id">Теги</label>
+                {{ form.tags(class="form-control mb-3") }}
+
+                <hr>
+                <label class="control-label" for="board">Доска</label>
+                {{ form.board(class="form-select mb-3") }}
+                <button type="submit" class="btn btn-info">Сохранить</button>
+            </form>
+
+        <form class="task_comment" id="task_comment"  action="{{ url_for('.task_add_comment', task_id=task_id) }}" method="post">
+                {{ form_comments.csrf_token() }}
+            <div id="comments">
+                <ul class="list-group">
+                {% for comment in comments %}
+                    <li class="list-group-item">{{ comment.description }}</li>
+                {% endfor %}
+                </ul>
+            </div>
+                <label class="control-label" for="description"><h3>Новый комментарий</h3></label>
+                {{ form_comments.description(class="form-control mb-3", rows=10) }}
+            <button type="submit" class="btn btn-info">Добавить комментарий</button>
+        </form>
+
+{% endblock body%}
+
+    {% block script %}
+        <script>
+        $(function () {
+            let description_task = $('#description_task');
+            $('form#task_comment').hide()
+            $('tr#task').on('click', function () {
+                var task_id = $(this).find('#task_id').text()
+                url = '{{ url_for('.index') }}' + `${task_id}`
+                location.assign(url)
+                description_task.focus()
+            });
+
+            {# блок задача - комментарии#}
+            $('#description_task ul li.nav-item').on('click', function () {
+                $(this).find('a').addClass("active")
+                $('#description_task li.nav-item').not($(this)).find('a').removeClass('active')
+                if ($(this).find('a').attr('id') === 'task_comment') {
+                    $('form#task_comment').show()
+                    $('form').not('#task_comment').hide()
+                } else {
+                    $('form#task_comment').hide()
+                    $('form#task_desc').show()
+                }
+            })
+        });
+        </script>
+    {% endblock script %}

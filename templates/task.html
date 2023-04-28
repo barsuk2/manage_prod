@@ -2,24 +2,61 @@
 {% set task_id=request.view_args.get('task_id') %}
 
 {% block body %}
-    <h1>Задача {{ task.id }}</h1>
-    <form method="post" action="{{ url_for('.post_task_', task_id = task_id) }}">
-    {{ form.csrf_token() }}
-    {{ form.title(class="form-control") }}
-    {{ form.description(class="form-control") }}
-    {{ form.user_id(class="form-select") }}
-    <button type="submit" class="btn btn-info">Отравить</button>
-    </form>
+    <div class="container">
+        <h1 class="offset-2 mb-3">Задача {{ task.id }}</h1>
+        <form method="post" action="{{ url_for('.task_edit', task_id=task_id) }}">
+            {{ form.csrf_token() }}
+            <div class="row">
+                <div class="col-2"><label class="control-label" for="title">Краткое описание задачи</label></div>
+                <div class="col-10">{{ form.title(class="form-control mb-3") }}</div>
+            </div>
+
+            <div class="row">
+                <div class="col-2"><label class="control-label" for="description">Полное описание задачи</label></div>
+                <div class="col-10">{{ form.description(class="form-control mb-3", rows=10) }}</div>
+            </div>
+            <div class="row">
+                <div class="col-2 text-end"><label class="control-label" for="deadline">Дейдлайн</label></div>
+                <div class="col-4 text-end">{{ form.deadline(class="form-control mb-3 text-danger") }}</div>
+                <div class="col-2 text-end"><label class="control-label" for="user_id">Естимейт</label></div>
+                <div class="col-4 text-end">{{ form.estimate(class="form-control mb-3") }}</div>
+            </div>
+            <div class="row">
+                <div class="col-2 text-end"><label class="control-label" for="deadline">Теги</label></div>
+                <div class="col-10 text-end">{{ form.tags(class="form-control mb-3 text-danger") }}</div>
+            </div>
+            <div class="row justify-content-between">
+            <div class="col-auto offset-2">
+                <input type="radio" class="btn-check" name="stage" id="dev-job" autocomplete="off" value="Dev">
+                <label class="btn btn-outline-success" for="dev-job">Разработка</label>
+                <input type="radio" class="btn-check" name="stage" id="dev-pause" autocomplete="off" value="Qa">
+                <label class="btn btn-outline-success" for="dev-pause">Qa</label>
+                <input type="radio" class="btn-check" name="stage" id="dev-continue" autocomplete="off" value="Review">
+                <label class="btn btn-outline-success" for="dev-continue">Ревью</label>
+                <input type="radio" class="btn-check" name="stage" id="qa-start" autocomplete="off" value="Release">
+                <label class="btn btn-outline-warning" for="qa-start">Готов к релизу</label>
+                <input type="radio" class="btn-check" name="stage" id="qa-pause" autocomplete="off" value="Done">
+                <label class="btn btn-outline-warning" for="qa-pause">Готов</label>
+            </div>
+            <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+            <a href="{{ url_for('.get_mytask') }}" class="btn btn-outline-secondary">Вернуться</a></div>
+                </div>
+        </form>
+    </div>
 
 
-    <form id="description_task" action="/post_task/100" method="post">
-                <input id="csrf_token" name="csrf_token" type="hidden" value="IjAwNTBjZTA4YjNhZGE5OWE3MmYyMzdhYWE3YTFhNDUzZDYzODM5ZWYi.ZDGuuQ.mIJ6UmyrgiO3n6mmU4grCUItEJg">
-                <input class="form-control mb-3" id="title" name="title" type="text" >
-                <input class="form-control mb-3" id="description" name="description" type="text" >
-                <select class="form-select mb-3" id="user" name="user"></select>
-                {{ form.description(class="form-control") }}
-                <button type="submit" class="btn btn-info">Сохранить</button>
-                <a href="/">aa</a>
-    </form>
+{% endblock %}
+{% block script %}
+    <script>
+        $(function () {
+            $(':input[name="stage"]').each(function () {
+                if ($(this).attr('value') === '{{ task.stage }}') {
+                    console.log('{{ task.stage }}')
+                    $(this).attr('checked', 'checked')
+                }
+            })
 
+        });
+    </script>
 {% endblock %}

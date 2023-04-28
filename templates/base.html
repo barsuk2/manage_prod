@@ -2,14 +2,53 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
+    <link rel="stylesheet" href="/static/bootstrap-5.2.2/bootstrap.css"  type="text/css" />
+    <script src="/static/bootstrap-5.2.2/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <style>
+a {
+    text-decoration: none;
+}
+a:hover{
+  text-decoration: underline;
+  color: #337ab7;
+}
+
+@font-face {
+  font-family: 'Roboto Condensed';
+  font-style: normal;
+  font-weight: 400;
+  src: url(/static/ieVl2ZhZI2eCN5jzbjEETS9weq8-19a7CA.ttf) format('truetype');
+}
+    </style>
 </head>
 <body>
-<div class="container">
+<div class="container-fluid">
+    <div class="row bg-dark justify-content-between">
+        <div class="col">
+            <a class="text_not_underline h3 text-light" href="{{ url_for('.index') }}">Tracker</a>
+        </div>
+        <div class="col text-end">
+            <div class="dropdown">
+                <button class="btn  dropdown-toggle text-light" type="button" id="dropdownMenuButton1"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-user-circle-o mx-2 "></i>Здравствуйте, {{ current_user.username }}
+                </button>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a class="dropdown-item" href="{{ url_for('.get_mytask') }}">Мои задачи</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="#">Аналитика</a></li>
+                    <li><a class="dropdown-item" href="#">Добавить юзера</a></li>
+                    <li><a href="{{ url_for('.logout') }}" class="btn">Logout</a></li>
+                </ul>
+
+            </div>
+        </div>
+    </div>
 {% block nav %}
-            {% include 'nav.html' %}
+
 {% endblock nav%}
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
@@ -22,12 +61,12 @@
   {% endif %}
 {% endwith %}
 {% block body %}
-    <h1></h1>
 {% endblock body%}
+
 </div>
 {% block script %}
-
 {% endblock script%}
+
 
 </body>
 

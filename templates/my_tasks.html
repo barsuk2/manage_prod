@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{#{% set page = request.view_args.get('board_id') or 'Actual'%}#}
+{#{% set task_id = request.view_args.get('task_id') or 0 %}#}
+{% block nav %}
+{% endblock %}
+{% block body %}
+    <div class="container">
+    <h1>Задачи юзера {{ current_user.username }}</h1>
+    <div class="row">
+        <div class="col">
+            <table class="table table-striped ">
+                <thead>
+                <tr>
+                    <th class="col">#</th>
+                    <th class="col ">Описание задачи</th>
+                    <th class="col-1">Теги</th>
+                    <th class="col-1">Дедлайн</th>
+                    <th class="col-1">Естимейт</th>
+                    <th class="col-1">Состояние</th>
+                </tr>
+                </thead>
+                {% for task in tasks %}
+                    <tr class="{{ active }}" id="task">
+                        <td class="col-auto">{{ loop.index }}</td>
+                        <td class="col-auto border-start d-none" id="task_id">{{ task.id }}</td>
+                        <td class="col-auto border-start"><a
+                                href="{{ url_for('.task_edit', task_id=task.id) }}">{{ task.title }}</a></td>
+                        <td class="col-auto border-start text-nowrap text-success">{{ task.tags or '' }}</td>
+                        <td class="col-auto border-start text-danger">{{ task.deadline.strftime('%d-%m') if task.deadline }}</td>
+                        <td class="col-auto border-start text-primary">{{ task.estimate or '' }}</td>
+                        <td class="col-auto border-start">
+                            {% if  task.stage == 'Dev' %}
+                                {% set stage = 'text-info' %}
+                            {% elif task.stage == 'Release'%}
+                                {% set stage = 'text-success' %}
+                            {% elif task.stage == 'Qa'%}
+                                {% set stage = 'text-warning' %}
+                            {% elif task.stage == 'Review'%}
+                                {% set stage = 'text-dark' %}
+                            {% else %}
+                                {% set stage = 'd-none' %}
+                            {% endif %}
+                        <span class="fa-stack fa-1x {{ stage }}" title=" Задача в стадии - {{ task.stage }}">
+                        <i class="fa fa-square-o  fa-stack-2x"></i>
+                        <i class="fa fa-play fa-stack-1x"></i>
+                        </span>
+                        </td>
+                    </tr>
+                {% endfor %}
+                    </table>
+        </div>
+    </div>
+    </div>
+{% endblock %}
+{% block script %}
+    <script>
+        $(function () {
+            let $stage = $('span.fa-stack');
+            console.log($stage.attr('id'))
+            {#if ($stage.attr('id') === 'Dev') {
+                $stage.addClass('text-info')
+            } else if ($stage.attr('id') === 'Release'){
+                $stage.addClass('text-success')
+            }
+            else if ($stage.attr('id') === 'Review'){
+                $stage.addClass('text-danger')
+            } else if (stage.attr('id') === 'QA'){
+                $stage.addClass('c')
+            }
+            else {
+                $stage.addClass('d-none')
+            }#}
+        });
+    </script>
+{% endblock %}
