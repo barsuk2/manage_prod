@@ -25,6 +25,44 @@ a:hover{
     </style>
 </head>
 <body>
+{% macro icon_stage(stage) %}
+{#выводит иконку этапа#}
+{% if stage == 'Dev' %}
+{% set class_ = 'text-primary' %}
+{% set title = 'Разработка' %}
+{% elif stage == 'Qa'%}
+{% set class_ = 'text-warning' %}
+{% set title = 'На тестировании' %}
+{% elif stage == 'Review'%}
+{% set class_ = 'text-dark' %}
+{% set title = 'На ревью' %}
+{% elif stage == 'Release'%}
+{% set title = 'Готов к релизу' %}
+{% elif stage == 'Done'%}
+{% set class_ = 'text-success' %}
+{% else %}
+{% set class_ = 'd-none' %}
+{% endif %}
+<span class="fa-stack fa-1x {{ class_ }}" title="{{ title }}">
+    <i class="fa fa-square-o  fa-stack-2x"></i>
+    <i class="fa fa-play  fa-stack-1x"></i>
+</span>
+{% endmacro %}
+
+
+{% macro importent(importent) %}
+{% if importent == 'high' %}
+<span title="Важность высокая"><i class="text-danger fa fa-2x fa-long-arrow-up" aria-hidden="false" ></i>
+<i class="text-danger fa fa-2x fa-long-arrow-up" aria-hidden="false"></i></span>
+{% elif importent == 'medium'%}
+<i class="text-danger text-danger fa fa-2x fa-long-arrow-up" aria-hidden="false" title="Важность средняя"></i>
+{% elif importent == 'normal'%}
+<i class="text-success fa fa-2x fa-long-arrow-up" aria-hidden="false" title="Важность нормальная"></i>
+{% elif importent == 'low'%}
+<i class="text-success fa fa-2x fa-long-arrow-down" aria-hidden="false" title="Важность низкая"></i>
+{% endif %}
+{% endmacro %}
+
 <div class="container-fluid">
     <div class="row bg-dark justify-content-between">
         <div class="col">

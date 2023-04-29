@@ -26,7 +26,7 @@ def task_add_comment(task_id):
     comment = CommentsTask(task_id=task.id, title=form.title.data, description=form.description.data)
     db.session.add(comment)
     db.session.commit()
-    return redirect(url_for('.index', task_id=task.id))
+    return redirect(url_for('.index', task_id=task_id, board_id=task.board, add_comment=1))
 
 
 @bp.route('/task/<int:task_id>')
@@ -58,9 +58,9 @@ def index(board_id=None, task_id=None, create_task=None):
     if task_id:
         task = Task.query.get_or_404(task_id)
         comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
-
+    add_comment = request.args.get('add_comment')
     form = TaskFormEdit(obj=task)
-    form_comments = TaskCommentForm()
+    form_comments = TaskCommentForm(obj=task)
     users = Users.query.all()
     form.user_id.choices = [(0, '')] + [(user.id, user.username) for user in users]
     q = db.session.query(Task).filter(Task.board == board_id)
@@ -75,7 +75,7 @@ def index(board_id=None, task_id=None, create_task=None):
         db.session.commit()
         return redirect(url_for('.index', task_id=task_id, board_id=task.board))
     return render_template('index.html', tasks=tasks, form=form, task=task, form_comments=form_comments,
-                           comments=comments, create_task=create_task)
+                           comments=comments, create_task=create_task, add_comment=add_comment)
 
 @bp.route('/my_tasks')
 def get_mytask():

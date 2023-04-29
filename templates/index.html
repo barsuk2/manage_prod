@@ -2,12 +2,11 @@
 {% set page = request.view_args.get('board_id') or 'Actual'%}
 {% set task_id = request.view_args.get('task_id') or 0 %}
 
-
 {% block nav %}
 {% include 'nav.html' %}
 {% endblock %}
 {% block body %}
-    <h1 class="mb-5 ">Доска {{ page }} {{ create_task }}</h1>
+    <h1 class="mb-5 ">Доска {{ page }} {{ add_comment }}</h1>
     <div class="row">
         <div class="col-8 border-end">
             <table class="table">
@@ -15,10 +14,11 @@
         <tr>
             <th class="col-auto border-start">#</th>
             <th class="col-auto border-start">Заголовок</th>
-            <th class="col-1 border-start">Теги</th>
-            <th class="col-1 border-start">Исполнитель</th>
-            <th class="col-1 border-start">Дедлайн</th>
-            <th class="col-1 border-start">Естимейт</th>
+            <th class="col border-start">Теги</th>
+            <th class="col border-start">Исполнитель</th>
+            <th class="col border-start">Дедлайн</th>
+            <th class="col border-start">Естимейт</th>
+            <th class="col border-start" title="Важность"><i class="fa fa-exclamation fa-2x text-danger" ></i></th>
             <th class="col-2 border-start">Стадия</th>
         </tr>
         </thead>
@@ -46,24 +46,8 @@
                 <td class="border-start">{{ task.user.username or ''}}</td>
                 <td class="border-start text-danger">{{ task.deadline.strftime('%d-%m') if task.deadline }}</td>
                 <td class="border-start text-primary">{{ task.estimate or ''}}</td>
-                <td class="border-start text-nowrap">
-                    <span class="fa-stack fa-1x {{ status }}" title="Разработка - dev">
-                        <i class="fa fa-square-o {{ stage }} fa-stack-2x"></i>
-                        <i class="fa fa-play {{ stage }} fa-stack-1x"></i>
-                    </span>
-                    <span class="fa-stack fa-1x {{ status }}" title="Разработка - pause">
-                        <i class="fa fa-square-o {{ stage }} fa-stack-2x"></i>
-                        <i class="fa fa-pause {{ stage }} fa-stack-1x"></i>
-                    </span>
-                        <span class="fa-stack fa-1x {{ status }}" title="Разработка - done">
-                        <i class="fa fa-square-o {{ stage }} fa-stack-2x"></i>
-                        <i class="fa fa-check {{ stage }} fa-stack-1x"></i>
-                    </span>
-                    <span class="fa-stack fa-1x {{ status }}" title="Разработка - call">
-                        <i class="fa fa-square-o {{ stage }} fa-stack-2x"></i>
-                        <i class="fa fa-volume-control-phone {{ stage }} fa-stack-1x"></i>
-                    </span>
-                </td>
+                <td class="border-start text-primary">{{ importent(task.importance)}}</td>
+                <td class="border-start text-nowrap">{{ icon_stage(task.stage) }}</td>
             </tr>
         {% endfor %}
 
@@ -87,8 +71,16 @@
                 {{ form.title(class="form-control mb-3") }}
                 <label class="control-label" for="description">Описание задачи</label>
                 {{ form.description(class="form-control mb-3", rows=10) }}
+                <div class="row">
+                <div class="col">
                 <label class="control-label" for="user_id">Назначить исполнителя</label>
                 {{ form.user_id(class="form-select mb-3") }}
+                </div>
+                <div class="col">
+                <label class="control-label" for="importance">Установить важность</label>
+                {{ form.importance(class="form-select mb-3") }}
+                </div>
+                </div>
                 <div class="row">
                     <div class="col">
                     <label class="control-label" for="deadline">Дейдлайн</label>
@@ -175,7 +167,7 @@
     {% block script %}
         <script>
         $(function () {
-            let description_task = $('#description_task'), board = '{{ page }}';
+            let description_task = $('#description_task'), board = '{{ page }}', add_comment='{{ add_comment }}';
             $('form#task_comment').hide()
 
             {# подсветить доску#}

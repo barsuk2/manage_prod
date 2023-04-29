@@ -1,6 +1,5 @@
 {% extends 'base.html' %}
-{#{% set page = request.view_args.get('board_id') or 'Actual'%}#}
-{#{% set task_id = request.view_args.get('task_id') or 0 %}#}
+{% include 'macros.html' %}
 {% block nav %}
 {% endblock %}
 {% block body %}
@@ -8,14 +7,15 @@
     <h1>Задачи юзера {{ current_user.username }}</h1>
     <div class="row">
         <div class="col">
-            <table class="table table-striped ">
-                <thead>
+            <table class="table">
+                <thead class="table-light">
                 <tr>
                     <th class="col">#</th>
                     <th class="col ">Описание задачи</th>
                     <th class="col-1">Теги</th>
                     <th class="col-1">Дедлайн</th>
                     <th class="col-1">Естимейт</th>
+                    <th class="col-1">Важность</th>
                     <th class="col-1">Состояние</th>
                 </tr>
                 </thead>
@@ -26,25 +26,10 @@
                         <td class="col-auto border-start"><a
                                 href="{{ url_for('.task_edit', task_id=task.id) }}">{{ task.title }}</a></td>
                         <td class="col-auto border-start text-nowrap text-success">{{ task.tags or '' }}</td>
-                        <td class="col-auto border-start text-danger">{{ task.deadline.strftime('%d-%m') if task.deadline }}</td>
+                        <td class="col-auto border-start text-danger">{{ task.deadline.strftime('%d-%m-%Y') if task.deadline }}</td>
                         <td class="col-auto border-start text-primary">{{ task.estimate or '' }}</td>
-                        <td class="col-auto border-start">
-                            {% if  task.stage == 'Dev' %}
-                                {% set stage = 'text-info' %}
-                            {% elif task.stage == 'Release'%}
-                                {% set stage = 'text-success' %}
-                            {% elif task.stage == 'Qa'%}
-                                {% set stage = 'text-warning' %}
-                            {% elif task.stage == 'Review'%}
-                                {% set stage = 'text-dark' %}
-                            {% else %}
-                                {% set stage = 'd-none' %}
-                            {% endif %}
-                        <span class="fa-stack fa-1x {{ stage }}" title=" Задача в стадии - {{ task.stage }}">
-                        <i class="fa fa-square-o  fa-stack-2x"></i>
-                        <i class="fa fa-play fa-stack-1x"></i>
-                        </span>
-                        </td>
+                        <td class="col-auto border-start">{{ importent(task.importance)}}</td>
+                        <td class="col-auto border-start">{{ icon_stage(task.stage)}}</td>
                     </tr>
                 {% endfor %}
                     </table>

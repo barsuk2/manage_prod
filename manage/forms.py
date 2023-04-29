@@ -14,6 +14,7 @@ class TaskFormEdit(FlaskForm):
     estimate = DecimalField(validators=[v.Optional()])
     tags = StringField(validators=[v.Optional()])
     stage = StringField(validators=[v.Optional()])
+    importance = SelectField(choices=(' ',) + Task.IMPORTANCE, validators=[v.Optional()])
 
 
 class LoginForm(FlaskForm):

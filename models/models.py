@@ -44,6 +44,7 @@ class Task(db.Model):
     BOARDS = ('Actual', 'Complete', 'Plans', 'Release')
     STATUS = ('Job', 'Pause', 'Complete', 'Project')
     STAGE = ('Dev', 'Qa', 'Review', 'Release', 'Done')
+    IMPORTANCE = ('high', 'medium', 'normal', 'low')
 
     id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer, nullable=True)
@@ -57,6 +58,9 @@ class Task(db.Model):
     title = db.Column(db.String)
     description = db.Column(db.String)
     tags = db.Column(db.String, nullable=True)
+    importance = db.Column(db.Enum(*IMPORTANCE, name='importance'))
+
+
 
     def return_as_json(self):
         resp = {
