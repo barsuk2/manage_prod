@@ -1,19 +1,23 @@
 
-<div class="row">
-    <div class="col-6">
-        <ul class="nav nav-tabs">
+<nav class="navbar navbar-expand-lg mt-3">
+    <div class="container-fluid">
+        <ul class="nav nav-pills ">
             <li class="nav-item">
-                <a class="nav-link {{ active }}" href="{{ url_for('.index', board_id='Plans') }}">План</a>
+                <a class="nav-link" id="Plans" href="{{ url_for('.index', board_id='Plans') }}">План</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ active }}" href="{{ url_for('.index', board_id='Actual') }}">Актуальное</a>
+                <a class="nav-link" id="Actual" href="{{ url_for('.index', board_id='Actual') }}">Актуальное</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ active }}" href="{{ url_for('.index', board_id='Release') }}">Релиз</a>
+                <a class="nav-link" id="Release" href="{{ url_for('.index', board_id='Release') }}">Релиз</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ active }}" href="{{ url_for('.index', board_id='Complete') }}">Готово</a>
+                <a class="nav-link" id="Complete" href="{{ url_for('.index', board_id='Complete') }}">Готово</a>
+            </li>
+            <li class="nav-item text-end">
+
             </li>
         </ul>
+        <a class="btn btn-primary" id='add_task' href="{{ url_for('.index',board_id=page, create_task=True) }}">Добавить задачу</a>
     </div>
-
+</nav>

@@ -44,10 +44,11 @@ def get_task(task_id):
 
 
 @bp.route('/', methods=('POST', 'GET'))
-@bp.route('/<int:task_id>', methods=('POST', 'GET'))
+@bp.route('/<board_id>/<int:task_id>', methods=('POST', 'GET'))
+@bp.route('/<board_id>/<create_task>', methods=('POST', 'GET'))
 @bp.route('/<board_id>', methods=('POST', 'GET'))
 @login_required
-def index(board_id=None, task_id=None):
+def index(board_id=None, task_id=None, create_task=None):
     task = Task()
     comments = []
     if board_id and board_id not in Task.BOARDS:
@@ -57,6 +58,7 @@ def index(board_id=None, task_id=None):
     if task_id:
         task = Task.query.get_or_404(task_id)
         comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
+
     form = TaskFormEdit(obj=task)
     form_comments = TaskCommentForm()
     users = Users.query.all()
@@ -71,10 +73,9 @@ def index(board_id=None, task_id=None):
         form.populate_obj(task)
         db.session.add(task)
         db.session.commit()
-        return redirect(url_for('.index', task_id=task_id))
+        return redirect(url_for('.index', task_id=task_id, board_id=task.board))
     return render_template('index.html', tasks=tasks, form=form, task=task, form_comments=form_comments,
-                           comments=comments)
-
+                           comments=comments, create_task=create_task)
 
 @bp.route('/my_tasks')
 def get_mytask():
@@ -122,3 +123,11 @@ def login():
             login_user(user, **param)
             return redirect(url_for('.index'))
     return render_template('login.html', form=form)
+
+
+@bp.route('/delete_task/<board_id>/<int:task_id>')
+def del_task(board_id, task_id):
+    task = Task.query.get_or_404(task_id)
+    db.session.delete(task)
+    db.session.commit()
+    return redirect(url_for('.index', board_id=board_id))

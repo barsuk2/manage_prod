@@ -1,1 +1,1 @@
-flask run --debug
+flask run --debug -p 5500
