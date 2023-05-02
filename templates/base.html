@@ -8,6 +8,13 @@
     <script src="/static/bootstrap-5.2.2/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <style>
+    .table-filters {
+    margin: 5px 0 10px;
+    padding: 4px 8px;
+    background-color: #eee;
+    border-top: 1px dashed #bbb;
+    border-bottom: 1px dashed #bbb;
+}
 {#a {
     text-decoration: none;
 }
@@ -41,7 +48,7 @@ a:hover{
 {% elif stage == 'Done'%}
 {% set class_ = 'text-success' %}
 {% else %}
-{% set class_ = 'd-none' %}
+{% set class_ = 'text-light' %}
 {% endif %}
 <span class="fa-stack fa-1x {{ class_ }}" title="{{ title }}">
     <i class="fa fa-square-o  fa-stack-2x"></i>
@@ -50,21 +57,29 @@ a:hover{
 {% endmacro %}
 
 
-{% macro importent(importent) %}
-{% if importent == 'high' %}
-<span title="Важность высокая"><i class="text-danger fa fa-2x fa-long-arrow-up" aria-hidden="false" ></i>
-<i class="text-danger fa fa-2x fa-long-arrow-up" aria-hidden="false"></i></span>
+{% macro importance(importent) %}
+    {% set size = 'fa-1x' %}
+    {% if importent == 'high' %}
+    <span title="Важность высокая">
+    <i class="text-danger fa {{ size }} fa-long-arrow-up" aria-hidden="false" ></i>
+    <i class="text-danger fa {{ size }} fa-long-arrow-up" aria-hidden="false"></i>
+    </span>
 {% elif importent == 'medium'%}
-<i class="text-danger text-danger fa fa-2x fa-long-arrow-up" aria-hidden="false" title="Важность средняя"></i>
+    {% set class_ = 'text-danger fa-long-arrow-up' %}
+    {% set title="Важность средняя" %}
 {% elif importent == 'normal'%}
-<i class="text-success fa fa-2x fa-long-arrow-up" aria-hidden="false" title="Важность нормальная"></i>
+    {% set class_ = 'fa-long-arrow-up text-success' %}
+    {% set title="Важность нормальная" %}
 {% elif importent == 'low'%}
-<i class="text-success fa fa-2x fa-long-arrow-down" aria-hidden="false" title="Важность низкая"></i>
+    {% set class_ = 'fa-long-arrow-down text-success' %}
+    {% set title="Важность низкая" %}
 {% endif %}
+<i class="fa {{ size }} {{ class_ }} " aria-hidden="false" title="{{ title }}"></i>
+
 {% endmacro %}
 
 <div class="container-fluid">
-    <div class="row bg-dark justify-content-between">
+    <div class="row bg-dark justify-content-between mb-4">
         <div class="col">
             <a class="text_not_underline h3 text-light" href="{{ url_for('.index') }}">Tracker</a>
         </div>
@@ -75,10 +90,8 @@ a:hover{
                     <i class="fa fa-user-circle-o mx-2 "></i>Здравствуйте, {{ current_user.username }}
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="{{ url_for('.get_mytask') }}">Мои задачи</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('.mytask') }}">Мои задачи</a></li>
                     <li><hr class="dropdown-divider"></li>
-                    <li><a class="dropdown-item" href="#">Аналитика</a></li>
-                    <li><a class="dropdown-item" href="#">Добавить юзера</a></li>
                     <li><a href="{{ url_for('.logout') }}" class="btn">Logout</a></li>
                 </ul>
 

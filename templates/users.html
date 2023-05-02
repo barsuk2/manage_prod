@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block body %}
+
+<h1 class="my-3">Список юзеров
+<div class="float-lg-end">
+        <a class="btn btn-sm btn-success" href="{{ url_for('.get_users') }}">
+            <i class="fa fa-plus-circle"></i> Создать пользователя
+        </a></div>
+</h1>
+    <form method="get">
+    <div class="row table-filters justify-content-between">
+        <div class="col-lg-auto">
+            <div class="row">
+                <div class="col-lg-auto mb-1 mb-lg-0">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">Искать по: </span>
+                        <input class="form-control form-control-sm" type="text">
+                    </div>
+                </div>
+
+                <div class="col-lg-auto mb-1 mb-lg-0 ">
+                    <div class="input-group input-group-sm"><span class="input-group-text">Сортировать по: </span>
+                        <input class="form-control form-control-sm" type="text">
+                    </div>
+                </div>
+                <div class="col-auto ">
+
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-auto">
+            <div class="btn-group btn-group-sm mb-1 mb-lg-0">
+                <button type="submit" class="btn btn-submit btn-primary">Показать</button>
+{#                    <a href="{{ url_for('.users', **filters.default_values) }}" class="btn btn-secondary">Очистить</a>#}
+            </div>
+        </div>
+    </div>
+</form>
+    <table class="table ">
+            <thead class="table-light">
+        <tr>
+            <th class="col-auto border-start">#</th>
+            <th class="col-auto border-start">Имя</th>
+            <th class="col border-start">E-mail</th>
+            <th class="col border-end">Роли</th>
+        </tr>
+        </thead>
+        {% for user in users %}
+
+            <tr class="{{ active }}" id="task">
+                <td class="col-auto">{{ loop.index }}</td>
+                <td class="border-start d-none" id="task_id">{{ user.id }}</td>
+                <td class="border-start"><a href="#">{{ user.username }}</a></td>
+                <td class="border-start">{{ user.email}}</td>
+                <td class="border-end"></td>
+            </tr>
+        {% endfor %}
+
+    </table>
+{% endblock %}

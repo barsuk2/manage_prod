@@ -9,12 +9,12 @@ class TaskFormEdit(FlaskForm):
     title = StringField(validators=[v.DataRequired()])
     description = TextAreaField(validators=[v.Optional()])
     user_id = SelectField(coerce=int, validators=[v.Optional()])
-    board = SelectField(choices=('',) + Task.BOARDS)
+    board = SelectField(choices=[('', '')] + [(x, y) for x, y in Task.BOARDS.items()])
     deadline = DateField(validators=[v.Optional()])
     estimate = DecimalField(validators=[v.Optional()])
     tags = StringField(validators=[v.Optional()])
     stage = StringField(validators=[v.Optional()])
-    importance = SelectField(choices=(' ',) + Task.IMPORTANCE, validators=[v.Optional()])
+    importance = SelectField(choices=[('', 'Нет')] + [(x, y) for x, y in Task.IMPORTANCE.items()], validators=[v.Optional()])
 
 
 class LoginForm(FlaskForm):

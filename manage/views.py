@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, date, timedelta
 
 import requests
 from flask import Blueprint, redirect, url_for, flash
@@ -20,6 +21,7 @@ def logout():
 
 
 @bp.post('/task/<int:task_id>/add_comment')
+@login_required
 def task_add_comment(task_id):
     task = Task.query.get_or_404(task_id)
     form = TaskCommentForm(obj=request.form)
@@ -30,6 +32,7 @@ def task_add_comment(task_id):
 
 
 @bp.route('/task/<int:task_id>')
+@login_required
 def get_task(task_id):
     resp = {}
     comment_ = {}
@@ -51,6 +54,7 @@ def get_task(task_id):
 def index(board_id=None, task_id=None, create_task=None):
     task = Task()
     comments = []
+    counter = {}
     if board_id and board_id not in Task.BOARDS:
         abort(400, 'Страницы не существует')
     if not board_id:
@@ -59,36 +63,89 @@ def index(board_id=None, task_id=None, create_task=None):
         task = Task.query.get_or_404(task_id)
         comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
     add_comment = request.args.get('add_comment')
+
     form = TaskFormEdit(obj=task)
     form_comments = TaskCommentForm(obj=task)
     users = Users.query.all()
     form.user_id.choices = [(0, '')] + [(user.id, user.username) for user in users]
-    q = db.session.query(Task).filter(Task.board == board_id)
+    q = db.session.query(Task)
+
+    # Считает количество задач на доске актуальное
+    actual = q.filter(Task.board == 'Actual')
+    q = q.filter(Task.board == board_id)
+
+    for stage in Task.STAGE:
+        counter[stage] = actual.filter(Task.stage == stage).count()
+
+    counter['importance'] = actual.filter(Task.importance.in_(('high', 'medium'))).count()
+    counter['new'] = actual.filter(datetime.now() - Task.created <= timedelta(days=1)).count()
+
+    # Filter Actual
+    if request.args.get('a_filter'):
+        q = actual.filter(Task.stage == request.args.get('a_filter'))
+
+    if request.args.get('a_importance'):
+        q = actual.filter(Task.importance.in_(('high', 'medium')))
+
+    if request.args.get('a_new'):
+        q = actual.filter(datetime.now() - Task.created <= timedelta(days=1))
+
     tasks = q.order_by(Task.created.desc())
     if request.method == 'POST':
         if form.user_id.data == 0:
             form.user_id.data = None
         if not form.board.data:
             form.board.data = board_id
+        if form.importance.data == '':
+            form.importance.data = None
         form.populate_obj(task)
         db.session.add(task)
         db.session.commit()
         return redirect(url_for('.index', task_id=task_id, board_id=task.board))
     return render_template('index.html', tasks=tasks, form=form, task=task, form_comments=form_comments,
-                           comments=comments, create_task=create_task, add_comment=add_comment)
+                           comments=comments, create_task=create_task, add_comment=add_comment, counter=counter)
+
 
 @bp.route('/my_tasks')
-def get_mytask():
+@bp.route('/my_tasks/<int:task_id>', methods=('POST', 'GET'))
+@login_required
+def mytask(task_id=None):
     """
     Список моих задач
     """
+    counter = {}
     user = current_user
+    task = Task()
+    if task_id:
+        task = Task.query.get_or_404(task_id)
+        comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
+    form = TaskFormEdit(obj=task)
+    q = db.session.query(Task)
+    # Считает количество задач на доске актуальное
+    q = q.filter(Task.board == 'Actual', Task.user_id == user.id)
+
+    for stage in Task.STAGE:
+        counter[stage] = q.filter(Task.stage == stage).count()
+
+    counter['importance'] = q.filter(Task.importance.in_(('high', 'medium'))).count()
+    counter['new'] = q.filter(datetime.now() - Task.created <= timedelta(days=1)).count()
+
+    # Filter Actual
+    if request.args.get('a_filter'):
+        q = q.filter(Task.stage == request.args.get('a_filter'))
+
+    if request.args.get('a_importance'):
+        q = q.filter(Task.importance.in_(('high', 'medium')))
+
+    if request.args.get('a_new'):
+        q = q.filter(datetime.now() - Task.created <= timedelta(days=1))
     tasks = Task.query.filter(Task.user_id == user.id, Task.board == 'Actual')
-    return render_template('my_tasks.html', tasks=tasks)
+    return render_template('my_tasks.html', tasks=tasks, counter=counter, form=form)
 
 
 @bp.route('my/task/<int:task_id>', methods=('GET', 'POST'))
-def task_edit(task_id, status=None):
+@login_required
+def task_edit(task_id, ):
     """
     Редактировать задачу
     """
@@ -126,8 +183,16 @@ def login():
 
 
 @bp.route('/delete_task/<board_id>/<int:task_id>')
+@login_required
 def del_task(board_id, task_id):
     task = Task.query.get_or_404(task_id)
     db.session.delete(task)
     db.session.commit()
     return redirect(url_for('.index', board_id=board_id))
+
+
+@bp.route('/users')
+@login_required
+def get_users():
+    users = Users.query.order_by(Users.username).all()
+    return render_template('users.html', users=users)

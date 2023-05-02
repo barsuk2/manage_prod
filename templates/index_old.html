@@ -2,18 +2,13 @@
 {% set page = request.view_args.get('board_id') or 'Actual'%}
 {% set task_id = request.view_args.get('task_id') or 0 %}
 
+{% block nav %}
+{% include 'nav.html' %}
+{% endblock %}
 {% block body %}
+    <h1 class="mb-5">Доска {{ page }}</h1>
     <div class="row">
-{# Меню#}
-    {% include 'menu.html' %}
-        {# Список задач #}
         <div class="col-6">
-
-        <h1>Список задач</h1>
-        {% include 'nav.html' %}
-    <div class="row table-filters">Фильтры
-    </div>
-
             <table class="table table-borderless">
             <thead class="table-light">
         <tr>
@@ -58,9 +53,8 @@
 
     </table>
         </div>
-     {# Описание задачи #}
+
     <div class="col-4" id="description_task">
-     <h1>Задача №</h1>
         {% if task_id !=0 or create_task%}
         <ul class="nav nav-tabs">
             <li class="nav-item">
@@ -111,8 +105,47 @@
                 {% set k = {'task_id':task_id, 'board_id':page} %}
                 <a href="{{ url_for('.del_task', **k) }}" class="btn btn-outline-warning">Удалить задачу насовсем</a>
                 {% else %}
-
-
+                <div class="card mb-3" style="max-width: 540px;">
+              <div class="row g-0">
+                <div class="col-md-4">
+                  <img src="{{ url_for('static', filename='placat.jpg') }}" class="img-fluid rounded-start" alt="...">
+                </div>
+                <div class="col-md-8">
+                  <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card mb-3" style="max-width: 540px;">
+              <div class="row g-0">
+                <div class="col-md-4">
+                  <img src="{{ url_for('static', filename='risunki-61.jpg') }}" class="img-fluid rounded-start" alt="...">
+                </div>
+                <div class="col-md-8">
+                  <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                  </div>
+                </div>
+              </div>
+            </div><div class="card mb-3" style="max-width: 540px;">
+              <div class="row g-0">
+                <div class="col-md-4">
+                  <img src="{{ url_for('static', filename='foto-17.jpg') }}" class="img-fluid rounded-start" alt="...">
+                </div>
+                <div class="col-md-8">
+                  <div class="card-body">
+                    <h5 class="card-title">Card title</h5>
+                    <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                    <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                  </div>
+                </div>
+              </div>
+            </div>
                 {% endif %}
             </form>
         <form class="task_comment" id="task_comment"  action="{{ url_for('.task_add_comment', task_id=task_id) }}" method="post">

@@ -1,3 +1,5 @@
+from collections import OrderedDict
+
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -12,6 +14,7 @@ class Users(db.Model, UserMixin):
     username = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
     password_hash = db.Column(db.String)
+
     task = db.relationship('Task', backref='user')
 
     def set_password(self, password):
@@ -41,14 +44,16 @@ def load_user(user_id):
 class Task(db.Model):
     __tablename__ = 'tasks'
 
-    BOARDS = ('Actual', 'Complete', 'Plans', 'Release')
+    # BOARDS = {'Actual': 'Актуальные', 'Complete': 'Готовые', 'Plans': 'В планах', 'Pause': 'На паузе'}
+    BOARDS = OrderedDict(
+        [('Plans', 'В планах'), ('Actual', 'Актуальные'), ('Pause', 'На паузе'), ('Complete', 'Готовые')])
     STATUS = ('Job', 'Pause', 'Complete', 'Project')
     STAGE = ('Dev', 'Qa', 'Review', 'Release', 'Done')
-    IMPORTANCE = ('high', 'medium', 'normal', 'low')
+    IMPORTANCE = {'high': 'Высокая', 'medium': 'Средняя', 'normal': 'Обычная', 'low': 'Низкая'}
 
     id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer, nullable=True)
-    board = db.Column(db.Enum(*BOARDS, name='board'), nullable=False)
+    board = db.Column(db.Enum(*list(BOARDS.keys()), name='board'), nullable=False)
     task_status = db.Column(db.Enum(*STATUS, name='task_status'))
     stage = db.Column(db.Enum(*STAGE, name='stage'))
     created = db.Column(db.DateTime(timezone=True), server_default=db.text('now()'), nullable=False)
@@ -58,9 +63,7 @@ class Task(db.Model):
     title = db.Column(db.String)
     description = db.Column(db.String)
     tags = db.Column(db.String, nullable=True)
-    importance = db.Column(db.Enum(*IMPORTANCE, name='importance'))
-
-
+    importance = db.Column(db.Enum(*list(IMPORTANCE.keys()), name='importance'))
 
     def return_as_json(self):
         resp = {

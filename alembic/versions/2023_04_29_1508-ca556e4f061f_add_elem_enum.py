@@ -1,8 +1,8 @@
-"""add field task.importance
+"""add elem enum
 
-Revision ID: f09c0e9c86f9
+Revision ID: ca556e4f061f
 Revises: e6d7194f5325
-Create Date: 2023-04-29 12:51:12.968932
+Create Date: 2023-04-29 15:08:00.885548
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'f09c0e9c86f9'
+revision = 'ca556e4f061f'
 down_revision = 'e6d7194f5325'
 branch_labels = None
 depends_on = None

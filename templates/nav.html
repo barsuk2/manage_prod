@@ -1,6 +1,6 @@
 
 <nav class="navbar navbar-expand-lg mt-3">
-    <div class="container-fluid">
+    <div class="container-fluid table-filters">
         <ul class="nav nav-pills ">
             <li class="nav-item">
                 <a class="nav-link" id="Plans" href="{{ url_for('.index', board_id='Plans') }}">План</a>
@@ -9,7 +9,7 @@
                 <a class="nav-link" id="Actual" href="{{ url_for('.index', board_id='Actual') }}">Актуальное</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="Release" href="{{ url_for('.index', board_id='Release') }}">Релиз</a>
+                <a class="nav-link" id="Release" href="{{ url_for('.index', board_id='Release') }}">План</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" id="Complete" href="{{ url_for('.index', board_id='Complete') }}">Готово</a>
@@ -18,6 +18,6 @@
 
             </li>
         </ul>
-        <a class="btn btn-primary" id='add_task' href="{{ url_for('.index',board_id=page, create_task=True) }}">Добавить задачу</a>
+        <a class="btn btn-primary" id='add_task' href="{{ url_for('.index',board_id=page, create_task=True) }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> Добавить доску</a>
     </div>
 </nav>
