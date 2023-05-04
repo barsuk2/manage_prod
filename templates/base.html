@@ -43,8 +43,10 @@ a:hover{
 {% elif stage == 'Review'%}
 {% set class_ = 'text-dark' %}
 {% set title = 'На ревью' %}
+{% set class_ = 'text-secondary' %}
 {% elif stage == 'Release'%}
 {% set title = 'Готов к релизу' %}
+{% set class_ = 'text-success' %}
 {% elif stage == 'Done'%}
 {% set class_ = 'text-success' %}
 {% else %}

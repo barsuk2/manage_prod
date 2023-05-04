@@ -16,6 +16,7 @@ class Users(db.Model, UserMixin):
     password_hash = db.Column(db.String)
 
     task = db.relationship('Task', backref='user')
+    history = db.relationship('History', backref='user')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -106,9 +107,9 @@ class History(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.Integer, db.ForeignKey('tasks.id', ondelete='SET NULL', onupdate='CASCADE'))
-    task_status = db.Column(db.Enum(name='task_status'))
-    board = db.Column(db.Enum(name='board'))
-    stage = db.Column(db.Enum(name='stage'))
+    stage = db.Column(db.Enum(*Task.STAGE, name='stage'), nullable=True)
+    task_status = db.Column(db.Enum(*Task.STATUS, name='task_status'), nullable=True)
+    board = db.Column(db.Enum(*list(Task.BOARDS.keys()), name='board'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL', onupdate='CASCADE'))
     created = db.Column(db.DateTime(timezone=True), server_default=db.text('now()'), nullable=False)
 

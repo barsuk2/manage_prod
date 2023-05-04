@@ -1,19 +1,21 @@
 {% extends 'base.html' %}
 {% set page = request.view_args.get('board_id') or 'Actual'%}
 {% set task_id = request.view_args.get('task_id') or 0 %}
+{% set user_id = request.view_args.get('user_id') or 0 %}
 
 {% block body %}
     <div class="row">
 {# Меню#}
     {% include 'menu.html' %}
-        {# Список задач #}
+
+{# Список задач #}
         <div class="col-6">
 
         <h1>Список задач</h1>
+        {% if not user %}
         {% include 'nav.html' %}
-    <div class="row table-filters">Фильтры
-    </div>
-
+{#            <div class="row table-filters">Фильтры</div>#}
+        {% endif %}
             <table class="table table-borderless">
             <thead class="table-light">
         <tr>
@@ -46,7 +48,7 @@
             <tr class="{{ active }}" id="task">
                 <td class="col-auto" id="id">{{ loop.index }}</td>
                 <td class="border-start d-none" id="task_id">{{ task.id }}</td>
-                <td class="border-start"><a href="#">{{ task.title }}</a></td>
+                <td class="border-start"><a href="{{ url_for('.index', user_id=user_id, task_id=task.id) }}">{{ task.title }}</a></td>
                 <td class="border-start fs-6">{{ task.tags or ''}}</td>
                 <td class="border-start">{{ task.user.username or ''}}</td>
                 <td class="border-start text-danger">{{ task.deadline.strftime('%d-%m') if task.deadline }}</td>
@@ -58,114 +60,218 @@
 
     </table>
         </div>
-     {# Описание задачи #}
-    <div class="col-4" id="description_task">
-     <h1>Задача №</h1>
-        {% if task_id !=0 or create_task%}
-        <ul class="nav nav-tabs">
-            <li class="nav-item">
-                <a class="nav-link active" aria-current="page" href="#" id="task_desc">Описание задачи</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" id="task_comment">Комментарии</a>
-            </li>
+ {# Описание задачи #}
+             <div class="col-4">
+            <h1>Описание задачи {{ task_id }}</h1>
+            <ul class="nav nav-tabs nav-task">
+                <li class="nav-item">
+                    <a class="nav-link active" aria-current="page" href="#" id="manage">Описание задачи</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="comment">Комментарии</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#" id="history">История</a>
+                </li>
 
-        </ul>
-            <form class="task" id="task_desc" action="{{ url_for('.index', task_id=task_id, board_id=page) }}" method="post">
+            </ul>
+            <form class="task manage" id="task_desc" action="{{ url_for('.mytask', task_id=task_id, board_id=page) }}"
+                  method="post">
                 {{ form.csrf_token() }}
                 <label class="control-label" for="title">Заголовок</label>
                 {{ form.title(class="form-control mb-3") }}
                 <label class="control-label" for="description">Описание задачи</label>
-                {{ form.description(class="form-control mb-3", rows=10) }}
-                <div class="row">
-                <div class="col">
-                <label class="control-label" for="user_id">Назначить исполнителя</label>
-                {{ form.user_id(class="form-select mb-3") }}
-                </div>
-                <div class="col">
-                <label class="control-label" for="importance">Установить важность</label>
-                {{ form.importance(class="form-select mb-3") }}
-                </div>
-                </div>
+                {{ form.description(class="form-control mb-3", rows=5) }}
+
                 <div class="row">
                     <div class="col">
-                    <label class="control-label" for="deadline">Дейдлайн</label>
-                {{ form.deadline(class="form-control mb-3 text-danger") }}</div>
+                        <label class="control-label" for="deadline">Дейдлайн</label>
+                        {{ form.deadline(class="form-control mb-3 text-danger") }}</div>
                     <div class="col">
-                    <label class="control-label" for="user_id">Естимейт</label>
-                {{ form.estimate(class="form-control mb-3") }}
-                        </div>
+                        <label class="control-label" for="user_id">Естимейт</label>
+                        {{ form.estimate(class="form-control mb-3") }}
                     </div>
+                </div>
 
                 <div class="row">
                     <div class="col">
-                <label class="control-label" for="user_id">Теги</label>
-                {{ form.tags(class="form-control mb-3") }}
-                </div>
-                    <div class="col">
-                <label class="control-label" for="board">Доска</label>
-                {{ form.board(class="form-select mb-3") }}
-                </div>
+                        <label class="control-label" for="user_id">Теги</label>
+                        {{ form.tags(class="form-control mb-3") }}
                     </div>
-                <button type="submit" class="btn btn-info">Сохранить</button>
-                {% set k = {'task_id':task_id, 'board_id':page} %}
-                <a href="{{ url_for('.del_task', **k) }}" class="btn btn-outline-warning">Удалить задачу насовсем</a>
-                {% else %}
-
-
-                {% endif %}
+                    <div class="col">
+                        <label class="control-label" for="board">Доска</label>
+                        {{ form.board(class="form-select mb-3") }}
+                    </div>
+                </div>
+                <div class="row justify-content-between borde">
+                    <div class="col-auto">
+                        <input type="radio" class="btn-check" name="stage" id="dev-job" autocomplete="off" value="Dev">
+                        <label class="btn btn-outline-primary" for="dev-job">Разработка</label>
+                        <input type="radio" class="btn-check" name="stage" id="dev-pause" autocomplete="off" value="Qa">
+                        <label class="btn btn-outline-warning" for="dev-pause">Qa</label>
+                        <input type="radio" class="btn-check" name="stage" id="dev-continue" autocomplete="off"
+                               value="Review">
+                        <label class="btn btn-outline-secondary" for="dev-continue">Ревью</label>
+                        <input type="radio" class="btn-check" name="stage" id="qa-start" autocomplete="off"
+                               value="Release">
+                        <label class="btn btn-outline-success" for="qa-start">Готов к релизу</label>
+                        <input type="radio" class="btn-check" name="stage" id="qa-pause" autocomplete="off"
+                               value="Done">
+                        <label class="btn btn-outline-success" for="qa-pause">Готов</label>
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Сохранить</button>
+                    </div>
+                </div>
             </form>
-        <form class="task_comment" id="task_comment"  action="{{ url_for('.task_add_comment', task_id=task_id) }}" method="post">
+            <form class="task comment" id="task_comment" action="{{ url_for('.task_add_comment', task_id=task_id) }}"
+                  method="post">
                 {{ form_comments.csrf_token() }}
-            <div id="comments">
-                <ul class="list-group">
-                {% for comment in comments %}
-                    <li class="list-group-item "><textarea rows="10" class="form-control" name="text">{{ comment.description }}</textarea></li>
-                {% endfor %}
-                </ul>
-            </div>
+                <div id="comments">
+                    <ul class="list-group">
+                        {% for comment in comments %}
+                            <li class="list-group-item "><textarea rows="10" class="form-control"
+                                                                   name="text">{{ comment.description }}</textarea></li>
+                        {% endfor %}
+                    </ul>
+                </div>
                 <label class="control-label" for="description"><h3>Новый комментарий</h3></label>
                 {{ form_comments.description(class="form-control mb-3", rows=10) }}
-            <button type="submit" class="btn btn-info">Добавить комментарий</button>
-        </form>
+                <button type="submit" class="btn btn-info">Добавить комментарий</button>
+            </form>
+            <div class="task history">
+                <ul class="list-group">
+                    {% if history_task %}
+                        {% for h in history_task %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
 
+                            {{ h.created.strftime('%d-%m-%Y') }} сменился статус на {{ h.stage }} -
+                            {{ h.user.username }}
+                        {% endfor %}
+                    {% endif %}
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+{#    <div class="col-4" id="description_task">#}
+{#     <h1>Задача № </h1>#}
+{#        {% if task_id !=0 or create_task%}#}
+{#        <ul class="nav nav-tabs">#}
+{#            <li class="nav-item">#}
+{#                <a class="nav-link active" aria-current="page" href="#" id="task_desc">Описание задачи</a>#}
+{#            </li>#}
+{#            <li class="nav-item">#}
+{#                <a class="nav-link" href="#" id="task_comment">Комментарии</a>#}
+{#            </li>#}
+{##}
+{#        </ul>#}
+{#            <form class="task" id="task_desc" action="{{ url_for('.index', task_id=task_id, board_id=page) }}" method="post">#}
+{#                {{ form.csrf_token() }}#}
+{#                <label class="control-label" for="title">Заголовок</label>#}
+{#                {{ form.title(class="form-control mb-3") }}#}
+{#                <label class="control-label" for="description">Описание задачи</label>#}
+{#                {{ form.description(class="form-control mb-3", rows=10) }}#}
+{#                <div class="row">#}
+{#                <div class="col">#}
+{#                <label class="control-label" for="user_id">Назначить исполнителя</label>#}
+{#                {{ form.user_id(class="form-select mb-3") }}#}
+{#                </div>#}
+{#                <div class="col">#}
+{#                <label class="control-label" for="importance">Установить важность</label>#}
+{#                {{ form.importance(class="form-select mb-3") }}#}
+{#                </div>#}
+{#                </div>#}
+{#                <div class="row">#}
+{#                    <div class="col">#}
+{#                    <label class="control-label" for="deadline">Дейдлайн</label>#}
+{#                {{ form.deadline(class="form-control mb-3 text-danger") }}</div>#}
+{#                    <div class="col">#}
+{#                    <label class="control-label" for="user_id">Естимейт</label>#}
+{#                {{ form.estimate(class="form-control mb-3") }}#}
+{#                        </div>#}
+{#                    </div>#}
+{##}
+{#                <div class="row">#}
+{#                    <div class="col">#}
+{#                <label class="control-label" for="user_id">Теги</label>#}
+{#                {{ form.tags(class="form-control mb-3") }}#}
+{#                </div>#}
+{#                    <div class="col">#}
+{#                <label class="control-label" for="board">Доска</label>#}
+{#                {{ form.board(class="form-select mb-3") }}#}
+{#                </div>#}
+{#                    </div>#}
+{#                <button type="submit" class="btn btn-info">Сохранить</button>#}
+{#                {% set k = {'task_id':task_id, 'board_id':page} %}#}
+{#                <a href="{{ url_for('.del_task', **k) }}" class="btn btn-outline-warning">Удалить задачу насовсем</a>#}
+{#                {% else %}#}
+{##}
+{##}
+{#                {% endif %}#}
+{#            </form>#}
+{#        <form class="task_comment" id="task_comment"  action="{{ url_for('.task_add_comment', task_id=task_id) }}" method="post">#}
+{#                {{ form_comments.csrf_token() }}#}
+{#            <div id="comments">#}
+{#                <ul class="list-group">#}
+{#                {% for comment in comments %}#}
+{#                    <li class="list-group-item "><textarea rows="10" class="form-control" name="text">{{ comment.description }}</textarea></li>#}
+{#                {% endfor %}#}
+{#                </ul>#}
+{#            </div>#}
+{#                <label class="control-label" for="description"><h3>Новый комментарий</h3></label>#}
+{#                {{ form_comments.description(class="form-control mb-3", rows=10) }}#}
+{#            <button type="submit" class="btn btn-info">Добавить комментарий</button>#}
+{#        </form>#}
+{#    </div>#}
 {% endblock body%}
-
     {% block script %}
         <script>
         $(function () {
             let description_task = $('#description_task'), board = '{{ page }}', $task = $('tr#task');
             $('form#task_comment').hide()
 
+
+            // В зависимости от важности покрасим строки таблицы
             $task.each(function() {
-              // В зависимости от важности покрасим строки таблицы
             if ($(this).find('#importance i').hasClass('text-danger')){
             $(this).find('#id').addClass('border-start border-5 border-danger')
             } else if ($(this).find('#importance i').hasClass('text-success')) {
                 $(this).find('#id').addClass('border-start border-5 border-success')
             }
             })
-            {# подсветить доску#}
+            // подсветить доску
             $(`#${board}`).addClass('active')
-            $task.on('click', function () {
+
+            // Подсвечивает активную задачу в таблице
+            {#$task.on('click', function () {
                 var task_id = $(this).find('#task_id').text()
-                url = '{{ url_for('.index') }}' + `${board}/` + `${task_id}`
+                url = '{{ url_for('.index') }}' + `${board}/` + `task/${task_id}`
                 location.assign(url)
                 description_task.focus()
+            });#}
+            // Отображение нажатого радио баттона stage
+            $(':input[name="stage"]').each(function () {
+                if ($(this).attr('value') === '{{ task.stage }}') {
+                    $(this).attr('checked', 'checked')
+                }
             });
-
-            $('#description_task ul li.nav-item').on('click', function () {
+            // Навигация задачи -  вкладки
+            $('.nav-task li').on('click', function () {
+                this_id = $(this).find('a').attr('id')
                 // блок задача - комментарии
                 $(this).find('a').addClass("active")
-                $('#description_task li.nav-item').not($(this)).find('a').removeClass('active')
-                if ($(this).find('a').attr('id') === 'task_comment') {
-                    $('form#task_comment').show()
-                    $('form').not('#task_comment').hide()
-                } else {
-                    $('form#task_comment').hide()
-                    $('form#task_desc').show()
-                }
-            })
+                $('.nav-task li').not($(this)).find('a').removeClass('active')
+                // отображение блока комментарий, управление или история
+                $('.task').each(function (){
+                    if ($(this).hasClass(this_id)) {
+                        $(this).show()
+                    } else {
+                        $(this).hide()
+                    }
+                })
+
+            });
         });
         </script>
     {% endblock script %}

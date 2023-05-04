@@ -7,7 +7,7 @@ from flask import jsonify, render_template, abort, request
 from flask_login import login_required, login_user, logout_user, current_user
 
 from core import db
-from models import Task, Users, CommentsTask
+from models import Task, Users, CommentsTask, History
 from manage.forms import TaskFormEdit, LoginForm, TaskCommentForm
 
 bp = Blueprint('/', __name__, url_prefix='/')
@@ -20,41 +20,18 @@ def logout():
     return redirect(url_for('.index'))
 
 
-@bp.post('/task/<int:task_id>/add_comment')
-@login_required
-def task_add_comment(task_id):
-    task = Task.query.get_or_404(task_id)
-    form = TaskCommentForm(obj=request.form)
-    comment = CommentsTask(task_id=task.id, title=form.title.data, description=form.description.data)
-    db.session.add(comment)
-    db.session.commit()
-    return redirect(url_for('.index', task_id=task_id, board_id=task.board, add_comment=1))
-
-
-@bp.route('/task/<int:task_id>')
-@login_required
-def get_task(task_id):
-    resp = {}
-    comment_ = {}
-    task = Task.query.get_or_404(task_id)
-    resp['task'] = task.return_as_json()
-    comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
-    for ind, comment in enumerate(comments):
-        comment_[str(ind)] = comment.return_as_json()
-    resp['comments'] = comment_
-    resp['task'] = task.return_as_json()
-    return jsonify(resp)
-
-
 @bp.route('/', methods=('POST', 'GET'))
-@bp.route('/<board_id>/<int:task_id>', methods=('POST', 'GET'))
-@bp.route('/<board_id>/<create_task>', methods=('POST', 'GET'))
 @bp.route('/<board_id>', methods=('POST', 'GET'))
+@bp.route('/user/<int:user_id>/tasks', methods=('POST', 'GET'))
+@bp.route('/<board_id>/task/<int:task_id>', methods=('POST', 'GET'))
+@bp.route('/user/<int:user_id>/tasks/<int:task_id>', methods=('POST', 'GET'))
 @login_required
-def index(board_id=None, task_id=None, create_task=None):
+def index(board_id=None, task_id=None, create_task=None, user_id=None):
     task = Task()
     comments = []
     counter = {}
+    history_task = []
+    user = None
     if board_id and board_id not in Task.BOARDS:
         abort(400, 'Страницы не существует')
     if not board_id:
@@ -62,6 +39,7 @@ def index(board_id=None, task_id=None, create_task=None):
     if task_id:
         task = Task.query.get_or_404(task_id)
         comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
+        history_task = History.query.options(db.joinedload(History.user)).filter(History.task_id == task.id).all()
     add_comment = request.args.get('add_comment')
 
     form = TaskFormEdit(obj=task)
@@ -70,9 +48,17 @@ def index(board_id=None, task_id=None, create_task=None):
     form.user_id.choices = [(0, '')] + [(user.id, user.username) for user in users]
     q = db.session.query(Task)
 
+    if user_id:
+        user = Users.query.get_or_404(user_id)
+        q = q.filter(Task.user_id == user.id)
+
     # Считает количество задач на доске актуальное
     actual = q.filter(Task.board == 'Actual')
     q = q.filter(Task.board == board_id)
+
+    if user_id:
+        user = Users.query.get_or_404(user_id)
+        q = q.filter(Task.user_id == user.id)
 
     for stage in Task.STAGE:
         counter[stage] = actual.filter(Task.stage == stage).count()
@@ -103,25 +89,56 @@ def index(board_id=None, task_id=None, create_task=None):
         db.session.commit()
         return redirect(url_for('.index', task_id=task_id, board_id=task.board))
     return render_template('index.html', tasks=tasks, form=form, task=task, form_comments=form_comments,
-                           comments=comments, create_task=create_task, add_comment=add_comment, counter=counter)
+                           comments=comments, create_task=create_task, add_comment=add_comment, counter=counter,
+                           history_task=history_task, user=user)
+
+
+@bp.post('/task/<int:task_id>/add_comment')
+@login_required
+def task_add_comment(task_id):
+    task = Task.query.get_or_404(task_id)
+    form = TaskCommentForm(obj=request.form)
+    comment = CommentsTask(task_id=task.id, title=form.title.data, description=form.description.data)
+    db.session.add(comment)
+    db.session.commit()
+    return redirect(url_for('.index', task_id=task_id, board_id=task.board, add_comment=1))
+
+
+@bp.route('/task/<int:task_id>')
+@login_required
+def get_task(task_id):
+    resp = {}
+    comment_ = {}
+    task = Task.query.get_or_404(task_id)
+    resp['task'] = task.return_as_json()
+    comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
+    for ind, comment in enumerate(comments):
+        comment_[str(ind)] = comment.return_as_json()
+    resp['comments'] = comment_
+    resp['task'] = task.return_as_json()
+    return jsonify(resp)
 
 
 @bp.route('/my_tasks')
-@bp.route('/my_tasks/<int:task_id>', methods=('POST', 'GET'))
+@bp.route('/my_tasks/task/<int:task_id>', methods=('POST', 'GET'))
 @login_required
 def mytask(task_id=None):
     """
     Список моих задач
     """
     counter = {}
+    comments = []
     user = current_user
+    history_task = None
     task = Task()
     if task_id:
         task = Task.query.get_or_404(task_id)
         comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
+        history_task = History.query.options(db.joinedload(History.user)).filter(History.task_id == task.id).all()
     form = TaskFormEdit(obj=task)
+    form_comments = TaskFormEdit()
     q = db.session.query(Task)
-    # Считает количество задач на доске актуальное
+
     q = q.filter(Task.board == 'Actual', Task.user_id == user.id)
 
     for stage in Task.STAGE:
@@ -139,8 +156,19 @@ def mytask(task_id=None):
 
     if request.args.get('a_new'):
         q = q.filter(datetime.now() - Task.created <= timedelta(days=1))
-    tasks = Task.query.filter(Task.user_id == user.id, Task.board == 'Actual')
-    return render_template('my_tasks.html', tasks=tasks, counter=counter, form=form)
+    tasks = q.order_by(Task.created.desc())
+    if request.method == 'POST':
+        form.stage.data = request.form.get('stage')
+        form.populate_obj(task)
+
+        if task.stage == 'Done':
+            task.board = 'Complete'
+        db.session.add(task)
+        db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id))
+        db.session.commit()
+        return redirect(url_for('.mytask', task_id=task.id))
+    return render_template('my_tasks.html', tasks=tasks, counter=counter, form=form, task=task,
+                           history_task=history_task, comments=comments, form_comments=form_comments)
 
 
 @bp.route('my/task/<int:task_id>', methods=('GET', 'POST'))
