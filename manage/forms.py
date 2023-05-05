@@ -15,6 +15,7 @@ class TaskFormEdit(FlaskForm):
     tags = StringField(validators=[v.Optional()])
     stage = StringField(validators=[v.Optional()])
     importance = SelectField(choices=[('', 'Нет')] + [(x, y) for x, y in Task.IMPORTANCE.items()], validators=[v.Optional()])
+    # comments = TextAreaField(validators=[v.Optional()])
 
 
 class LoginForm(FlaskForm):

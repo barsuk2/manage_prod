@@ -50,7 +50,7 @@ a:hover{
 {% elif stage == 'Done'%}
 {% set class_ = 'text-success' %}
 {% else %}
-{% set class_ = 'text-light' %}
+{% set class_ = 'invisible' %}
 {% endif %}
 <span class="fa-stack fa-1x {{ class_ }}" title="{{ title }}">
     <i class="fa fa-square-o  fa-stack-2x"></i>
@@ -92,7 +92,7 @@ a:hover{
                     <i class="fa fa-user-circle-o mx-2 "></i>Здравствуйте, {{ current_user.username }}
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="{{ url_for('.mytask') }}">Мои задачи</a></li>
+                    <li><a class="dropdown-item" href="{{ url_for('.index', user_id=current_user.id) }}">Мои задачи</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a href="{{ url_for('.logout') }}" class="btn">Logout</a></li>
                 </ul>

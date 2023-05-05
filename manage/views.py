@@ -22,13 +22,12 @@ def logout():
 
 @bp.route('/', methods=('POST', 'GET'))
 @bp.route('/<board_id>', methods=('POST', 'GET'))
-@bp.route('/user/<int:user_id>/tasks', methods=('POST', 'GET'))
+@bp.route('/user/<int:user_id>  /tasks', methods=('POST', 'GET'))
 @bp.route('/<board_id>/task/<int:task_id>', methods=('POST', 'GET'))
 @bp.route('/user/<int:user_id>/tasks/<int:task_id>', methods=('POST', 'GET'))
 @login_required
 def index(board_id=None, task_id=None, create_task=None, user_id=None):
     task = Task()
-    comments = []
     counter = {}
     history_task = []
     user = None
@@ -38,12 +37,10 @@ def index(board_id=None, task_id=None, create_task=None, user_id=None):
         board_id = 'Actual'
     if task_id:
         task = Task.query.get_or_404(task_id)
-        comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
-        history_task = History.query.options(db.joinedload(History.user)).filter(History.task_id == task.id).all()
-    add_comment = request.args.get('add_comment')
+        history_task = History.query.options(db.joinedload(History.user)).filter(History.task_id == task.id)\
+            .order_by(History.created.desc()).all()
 
     form = TaskFormEdit(obj=task)
-    form_comments = TaskCommentForm(obj=task)
     users = Users.query.all()
     form.user_id.choices = [(0, '')] + [(user.id, user.username) for user in users]
     q = db.session.query(Task)
@@ -52,145 +49,69 @@ def index(board_id=None, task_id=None, create_task=None, user_id=None):
         user = Users.query.get_or_404(user_id)
         q = q.filter(Task.user_id == user.id)
 
-    # Считает количество задач на доске актуальное
     actual = q.filter(Task.board == 'Actual')
     q = q.filter(Task.board == board_id)
 
-    if user_id:
-        user = Users.query.get_or_404(user_id)
-        q = q.filter(Task.user_id == user.id)
-
+    # Считает количество задач на доске актуальное
     for stage in Task.STAGE:
         counter[stage] = actual.filter(Task.stage == stage).count()
-
     counter['importance'] = actual.filter(Task.importance.in_(('high', 'medium'))).count()
     counter['new'] = actual.filter(datetime.now() - Task.created <= timedelta(days=1)).count()
 
-    # Filter Actual
-    if request.args.get('a_filter'):
-        q = actual.filter(Task.stage == request.args.get('a_filter'))
-
-    if request.args.get('a_importance'):
+    # Фильтры для основного меню по доске Actual
+    filter = request.args.get('filter')
+    if filter:
+        q = actual.filter(Task.stage == request.args.get('filter'))
+    if filter and filter == 'importance':
         q = actual.filter(Task.importance.in_(('high', 'medium')))
-
-    if request.args.get('a_new'):
+    if filter and filter == 'new':
         q = actual.filter(datetime.now() - Task.created <= timedelta(days=1))
-
     tasks = q.order_by(Task.created.desc())
+
     if request.method == 'POST':
+        # Костыль на случай, если не приходит юзер
+        stage_before = task.stage
         if form.user_id.data == 0:
             form.user_id.data = None
+        
         if not form.board.data:
             form.board.data = board_id
         if form.importance.data == '':
             form.importance.data = None
+        if task.comments:
+            comments = task.comments.copy()
+            comments = [i for i in comments if i != '']
+        else:
+            comments = []
+
+        form_comment = request.form.get('comment')
+        comments.append(form_comment)
+        task.comments = comments
         form.populate_obj(task)
-        db.session.add(task)
-        db.session.commit()
-        return redirect(url_for('.index', task_id=task_id, board_id=task.board))
-    return render_template('index.html', tasks=tasks, form=form, task=task, form_comments=form_comments,
-                           comments=comments, create_task=create_task, add_comment=add_comment, counter=counter,
-                           history_task=history_task, user=user)
-
-
-@bp.post('/task/<int:task_id>/add_comment')
-@login_required
-def task_add_comment(task_id):
-    task = Task.query.get_or_404(task_id)
-    form = TaskCommentForm(obj=request.form)
-    comment = CommentsTask(task_id=task.id, title=form.title.data, description=form.description.data)
-    db.session.add(comment)
-    db.session.commit()
-    return redirect(url_for('.index', task_id=task_id, board_id=task.board, add_comment=1))
-
-
-@bp.route('/task/<int:task_id>')
-@login_required
-def get_task(task_id):
-    resp = {}
-    comment_ = {}
-    task = Task.query.get_or_404(task_id)
-    resp['task'] = task.return_as_json()
-    comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
-    for ind, comment in enumerate(comments):
-        comment_[str(ind)] = comment.return_as_json()
-    resp['comments'] = comment_
-    resp['task'] = task.return_as_json()
-    return jsonify(resp)
-
-
-@bp.route('/my_tasks')
-@bp.route('/my_tasks/task/<int:task_id>', methods=('POST', 'GET'))
-@login_required
-def mytask(task_id=None):
-    """
-    Список моих задач
-    """
-    counter = {}
-    comments = []
-    user = current_user
-    history_task = None
-    task = Task()
-    if task_id:
-        task = Task.query.get_or_404(task_id)
-        comments = CommentsTask.query.filter_by(task_id=task_id).order_by(CommentsTask.created.desc()).all()
-        history_task = History.query.options(db.joinedload(History.user)).filter(History.task_id == task.id).all()
-    form = TaskFormEdit(obj=task)
-    form_comments = TaskFormEdit()
-    q = db.session.query(Task)
-
-    q = q.filter(Task.board == 'Actual', Task.user_id == user.id)
-
-    for stage in Task.STAGE:
-        counter[stage] = q.filter(Task.stage == stage).count()
-
-    counter['importance'] = q.filter(Task.importance.in_(('high', 'medium'))).count()
-    counter['new'] = q.filter(datetime.now() - Task.created <= timedelta(days=1)).count()
-
-    # Filter Actual
-    if request.args.get('a_filter'):
-        q = q.filter(Task.stage == request.args.get('a_filter'))
-
-    if request.args.get('a_importance'):
-        q = q.filter(Task.importance.in_(('high', 'medium')))
-
-    if request.args.get('a_new'):
-        q = q.filter(datetime.now() - Task.created <= timedelta(days=1))
-    tasks = q.order_by(Task.created.desc())
-    if request.method == 'POST':
-        form.stage.data = request.form.get('stage')
-        form.populate_obj(task)
-
+        if user_id:
+            task.user_id = current_user.id
+        # Удаление задачи: Задача физически не удаляется, а переноситься на доску готово
         if task.stage == 'Done':
             task.board = 'Complete'
+            query_string = {'user_id': user_id}
+        else:
+            query_string = {'user_id': user_id, 'task_id': task_id}
+
         db.session.add(task)
-        db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id))
+        db.session.flush()
+        # todo сделать функцию логирования - добавления записей в history
+        if not task.stage:
+            task_status = 'Created'
+            db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id,
+                                   task_status=task_status, title=task.title))
+        else:
+            if task.stage != stage_before:
+                db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id,
+                                       ))
         db.session.commit()
-        return redirect(url_for('.mytask', task_id=task.id))
-    return render_template('my_tasks.html', tasks=tasks, counter=counter, form=form, task=task,
-                           history_task=history_task, comments=comments, form_comments=form_comments)
-
-
-@bp.route('my/task/<int:task_id>', methods=('GET', 'POST'))
-@login_required
-def task_edit(task_id, ):
-    """
-    Редактировать задачу
-    """
-    task = db.session.query(Task).get_or_404(task_id)
-    comment = db.session.query(CommentsTask).filter(CommentsTask.task_id == task.id).all()
-    form = TaskFormEdit(obj=task)
-
-    if request.method == 'POST':
-        form.stage.data = request.form.get('stage')
-        print(form.stage.data)
-        form.populate_obj(task)
-        if task.stage == 'Done':
-            task.board = 'Complete'
-        db.session.add(task)
-        db.session.commit()
-        return redirect(url_for('.task_edit', task_id=task.id))
-    return render_template('task.html', task=task, form=form, comment=comment)
+        return redirect(url_for('.index', **query_string))
+    return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter,
+                           history_task=history_task, user=user, filter={'filter': filter})
 
 
 @bp.route('/login/', methods=['GET', 'POST'])
@@ -210,13 +131,22 @@ def login():
     return render_template('login.html', form=form)
 
 
-@bp.route('/delete_task/<board_id>/<int:task_id>')
+@bp.route('/delete_task/<board_id>/<int:task_id>', methods=('POST',))
+@bp.route('/delete_task/<int:user_id>/<int:task_id>', methods=('POST',))
 @login_required
-def del_task(board_id, task_id):
+def del_task(task_id, user_id=None, board_id=None):
+
     task = Task.query.get_or_404(task_id)
     db.session.delete(task)
+    # todo сделать функцию логирования - добавления записей в history
+    db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id,
+                           task_status='Deleted', title=task.title))
     db.session.commit()
-    return redirect(url_for('.index', board_id=board_id))
+    if user_id:
+        qs = {'user_id': user_id}
+    else:
+        qs = {'board_id': board_id, 'task_id': task_id}
+    return redirect(url_for('.index', **qs))
 
 
 @bp.route('/users')

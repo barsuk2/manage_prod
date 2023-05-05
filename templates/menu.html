@@ -7,34 +7,32 @@
                 <li class="list-group-item d-flex justify-content-between"><a href="{{ url_for('.index', user_id=current_user.id) }}">Мои задачи</a>
                 <i class="fa fs-4 fa-user d-flex text-success" aria-hidden="true"></i>
                 </li>
-                <li class="list-group-item d-flex justify-content-between align-items-start"><a href="{{ url_for('.index', user_id=user_id, a_new=True) }}">Новое</a><span class="badge bg-primary rounded-pill">{{counter.new }}</span>
-                <li class="list-group-item d-flex justify-content-between align-items-start"><a href="{{ url_for('.index', user_id=user_id, a_importance=True) }}">Важное </a><span class="badge bg-danger rounded-pill">{{counter.importance }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-start"><a href="{{ url_for('.index', user_id=user_id, filter='new') }}">Новое</a><span class="badge bg-primary rounded-pill">{{counter.new }}</span>
+                <li class="list-group-item d-flex justify-content-between align-items-start"><a href="{{ url_for('.index', user_id=user_id, filter='importance') }}">Важное </a><span class="badge bg-danger rounded-pill">{{counter.importance }}</span>
             </ul>
-
-
-            <h3 class="mt-5">Tasks</h3>
+            <h3 class="mt-5">{{ 'My tasks' if user else 'All tasks' }}</h3>
             <ol class="list-group list-group-flush">
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                     <div class="ms-2 me-auto">
-                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, a_filter='Dev') }}">В работе</a></div>
+                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, filter='Dev') }}">В работе</a></div>
                     </div>
                     <span class="badge bg-primary rounded-pill">{{ counter.Dev }}</span>
                 </li>
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                     <div class="ms-2 me-auto">
-                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, a_filter='Qa') }}">На тестировании</a></div>
+                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, filter='Qa') }}">На тестировании</a></div>
                     </div>
                     <span class="badge bg-warning rounded-pill">{{ counter.Qa }}</span>
                 </li>
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                     <div class="ms-2 me-auto">
-                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, a_filter='Review') }}">На ревью</a></div>
+                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, filter='Review') }}">На ревью</a></div>
                     </div>
                     <span class="badge bg-secondary rounded-pill">{{ counter.Review }}</span>
                 </li>
                 <li class="list-group-item d-flex justify-content-between align-items-start">
                     <div class="ms-2 me-auto">
-                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, a_filter='Release') }}">Готов к релизу</a></div>
+                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, filter='Release') }}">Готов к релизу</a></div>
                     </div>
                     <span class="badge bg-success rounded-pill">{{ counter.Release }}</span>
                 </li>

@@ -48,7 +48,7 @@ class Task(db.Model):
     # BOARDS = {'Actual': 'Актуальные', 'Complete': 'Готовые', 'Plans': 'В планах', 'Pause': 'На паузе'}
     BOARDS = OrderedDict(
         [('Plans', 'В планах'), ('Actual', 'Актуальные'), ('Pause', 'На паузе'), ('Complete', 'Готовые')])
-    STATUS = ('Job', 'Pause', 'Complete', 'Project')
+    STATUS = ('Job', 'Pause', 'Complete', 'Project', 'Delete', 'Created', 'Deleted')
     STAGE = ('Dev', 'Qa', 'Review', 'Release', 'Done')
     IMPORTANCE = {'high': 'Высокая', 'medium': 'Средняя', 'normal': 'Обычная', 'low': 'Низкая'}
 
@@ -65,6 +65,7 @@ class Task(db.Model):
     description = db.Column(db.String)
     tags = db.Column(db.String, nullable=True)
     importance = db.Column(db.Enum(*list(IMPORTANCE.keys()), name='importance'))
+    comments = db.Column(ARRAY(db.String(32), zero_indexes=True))
 
     def return_as_json(self):
         resp = {
@@ -108,6 +109,7 @@ class History(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     task_id = db.Column(db.Integer, db.ForeignKey('tasks.id', ondelete='SET NULL', onupdate='CASCADE'))
     stage = db.Column(db.Enum(*Task.STAGE, name='stage'), nullable=True)
+    title = db.Column(db.String)
     task_status = db.Column(db.Enum(*Task.STATUS, name='task_status'), nullable=True)
     board = db.Column(db.Enum(*list(Task.BOARDS.keys()), name='board'), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL', onupdate='CASCADE'))
