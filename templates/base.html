@@ -5,6 +5,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/bootstrap-5.2.2/bootstrap.css"  type="text/css" />
+    <link rel="icon" type="image/png" href="/static/favicon.ico" sizes="16x16">
     <script src="/static/bootstrap-5.2.2/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <style>
@@ -92,7 +93,7 @@ a:hover{
                     <i class="fa fa-user-circle-o mx-2 "></i>Здравствуйте, {{ current_user.username }}
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="{{ url_for('.index', user_id=current_user.id) }}">Мои задачи</a></li>
+                    <li><a class="dropdown-item" href="">Мои задачи</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a href="{{ url_for('.logout') }}" class="btn">Logout</a></li>
                 </ul>

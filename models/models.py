@@ -49,14 +49,14 @@ class Task(db.Model):
     BOARDS = OrderedDict(
         [('Plans', 'В планах'), ('Actual', 'Актуальные'), ('Pause', 'На паузе'), ('Complete', 'Готовые')])
     STATUS = ('Job', 'Pause', 'Complete', 'Project', 'Delete', 'Created', 'Deleted')
-    STAGE = ('Dev', 'Qa', 'Review', 'Release', 'Done')
+    STAGE = ('Dev', 'Qa', 'Review', 'Release', 'Done', 'Not_started')
     IMPORTANCE = {'high': 'Высокая', 'medium': 'Средняя', 'normal': 'Обычная', 'low': 'Низкая'}
 
     id = db.Column(db.Integer, primary_key=True)
     parent_id = db.Column(db.Integer, nullable=True)
     board = db.Column(db.Enum(*list(BOARDS.keys()), name='board'), nullable=False)
     task_status = db.Column(db.Enum(*STATUS, name='task_status'))
-    stage = db.Column(db.Enum(*STAGE, name='stage'))
+    stage = db.Column(db.Enum(*STAGE, name='stage'), default='Not_started', server_default='Not_started')
     created = db.Column(db.DateTime(timezone=True), server_default=db.text('now()'), nullable=False)
     deadline = db.Column(db.DateTime(timezone=True), nullable=True)
     estimate = db.Column(db.Float, nullable=True)

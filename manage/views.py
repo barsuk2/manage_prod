@@ -1,16 +1,30 @@
 import time
 from datetime import datetime, date, timedelta
 
-import requests
 from flask import Blueprint, redirect, url_for, flash
-from flask import jsonify, render_template, abort, request
+from flask import render_template, abort, request
 from flask_login import login_required, login_user, logout_user, current_user
 
 from core import db
-from models import Task, Users, CommentsTask, History
+from models import Task, Users, History
 from manage.forms import TaskFormEdit, LoginForm, TaskCommentForm
 
 bp = Blueprint('/', __name__, url_prefix='/')
+
+
+def loging_stage_task(task, task_id, before_task=None):
+    qs = {}
+    if task.id != task_id:
+        qs = {'task_status': 'Created', 'title': task.title}
+    #     Добавляем новый
+    elif task.stage != before_task['stage']:
+        qs = {'task_status': 'Job'}
+    elif task.board == 'Complete':
+        qs = {'task_status': 'Complete'}
+
+    task_history = History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id, **qs)
+    db.session.add(task_history)
+    db.session.commit()
 
 
 @bp.route("/logout/")
@@ -27,7 +41,6 @@ def logout():
 @bp.route('/user/<int:user_id>/tasks/<int:task_id>', methods=('POST', 'GET'))
 @login_required
 def index(board_id=None, task_id=None, create_task=None, user_id=None):
-    task = Task()
     counter = {}
     history_task = []
     user = None
@@ -37,9 +50,11 @@ def index(board_id=None, task_id=None, create_task=None, user_id=None):
         board_id = 'Actual'
     if task_id:
         task = Task.query.get_or_404(task_id)
-        history_task = History.query.options(db.joinedload(History.user)).filter(History.task_id == task.id)\
+        history_task = History.query.options(db.joinedload(History.user)).filter(History.task_id == task.id) \
             .order_by(History.created.desc()).all()
-
+    else:
+        task = Task()
+    before_task = task.__dict__
     form = TaskFormEdit(obj=task)
     users = Users.query.all()
     form.user_id.choices = [(0, '')] + [(user.id, user.username) for user in users]
@@ -71,9 +86,10 @@ def index(board_id=None, task_id=None, create_task=None, user_id=None):
     if request.method == 'POST':
         # Костыль на случай, если не приходит юзер
         stage_before = task.stage
+
         if form.user_id.data == 0:
             form.user_id.data = None
-        
+
         if not form.board.data:
             form.board.data = board_id
         if form.importance.data == '':
@@ -88,30 +104,23 @@ def index(board_id=None, task_id=None, create_task=None, user_id=None):
         comments.append(form_comment)
         task.comments = comments
         form.populate_obj(task)
+
         if user_id:
             task.user_id = current_user.id
+            query_string = {'user_id': user_id, 'task_id': task_id}
+        else:
+            query_string = {'board_id': board_id, 'task_id': task_id}
         # Удаление задачи: Задача физически не удаляется, а переноситься на доску готово
         if task.stage == 'Done':
             task.board = 'Complete'
             query_string = {'user_id': user_id}
-        else:
-            query_string = {'user_id': user_id, 'task_id': task_id}
-
         db.session.add(task)
-        db.session.flush()
-        # todo сделать функцию логирования - добавления записей в history
-        if not task.stage:
-            task_status = 'Created'
-            db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id,
-                                   task_status=task_status, title=task.title))
-        else:
-            if task.stage != stage_before:
-                db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id,
-                                       ))
         db.session.commit()
+        loging_stage_task(task, task_id, before_task)
+
         return redirect(url_for('.index', **query_string))
     return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter,
-                           history_task=history_task, user=user, filter={'filter': filter})
+                           history_task=history_task, user=user, filter=filter)
 
 
 @bp.route('/login/', methods=['GET', 'POST'])
@@ -121,7 +130,7 @@ def login():
         name = form.name.data
         password = form.password.data
         remember_my = form.remember_my.data
-        user = Users.query.filter(Users.username == name).first()
+        user = Users.query.filter(Users.email == name).first()
         if not user or not user.check_password(password):
             flash('Логин/Пароль не найден', 'danger')
         else:
@@ -135,17 +144,15 @@ def login():
 @bp.route('/delete_task/<int:user_id>/<int:task_id>', methods=('POST',))
 @login_required
 def del_task(task_id, user_id=None, board_id=None):
-
     task = Task.query.get_or_404(task_id)
     db.session.delete(task)
-    # todo сделать функцию логирования - добавления записей в history
     db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id,
-                           task_status='Deleted', title=task.title))
+                           task_status='Deleted'))
     db.session.commit()
     if user_id:
         qs = {'user_id': user_id}
     else:
-        qs = {'board_id': board_id, 'task_id': task_id}
+        qs = {'board_id': board_id}
     return redirect(url_for('.index', **qs))
 
 

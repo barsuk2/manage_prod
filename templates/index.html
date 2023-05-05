@@ -3,6 +3,16 @@
 {% set task_id = request.view_args.get('task_id') or 0 %}
 {% set user_id = request.view_args.get('user_id') or 0 %}
 
+{% set qs = {'board_id': page} %}
+
+{% if user_id == 0 %}
+{% set qs = {'board_id': page, 'task_id': task_id} %}
+{% else %}
+{% set qs = {'user_id': user_id, 'task_id': task_id, 'filter': filter} %}
+{% endif %}
+{#{% set qs = qs.update(filter) %}#}
+
+
 
 {% block body %}
     <div class="row">
@@ -11,15 +21,9 @@
 
     {# Список задач #}
     <div class="col-6">
-
-            {% include 'nav.html' %}
-
-        {% if not user %}
-            <h1>Список задач</h1>
-            {#            <div class="row table-filters">Фильтры</div>#}
-        {% else %}
-            <h1>Мои задачи</h1>
-        {% endif %}
+    <h1>Доски</h1>
+        {% include 'nav.html' %}
+        <h1>{{ 'Список задач' if not user else 'Мои задачи'}} </h1>
         <table class="table table-borderless">
             <thead class="table-light">
             <tr>
@@ -41,8 +45,14 @@
                 <tr class="{{ active }}" id="task" style="--bs-bg-opacity: .1;">
                     <td class="col-auto" id="id">{{ loop.index }}</td>
                     <td class="border-start d-none" id="task_id">{{ task.id }}</td>
-                    <td class="border-start d-flex justify-content-between align-items-start"><a class=""
-                            href="{{ url_for('.index', user_id=user_id, task_id=task.id, **filter) }}">{{ task.title }} </a><span class="badge bg-secondary rounded-pill" title="количество комментов">{{ task.comments|len_list or '' }}</span>
+                    {% if user_id == 0 %}
+                    {% set qs = {'board_id': page, 'task_id': task.id, 'filter': filter} %}
+                    {% else %}
+                    {% set qs = {'user_id': user_id, 'task_id': task.id, 'filter': filter} %}
+                    {% endif %}
+
+                    <td class="border-start d-flex justify-content-between align-items-start"><a href="{{ url_for('.index', **qs) }}">
+                            {{ task.title }} </a><span class="badge bg-secondary rounded-pill" title="количество комментов">{{ task.comments|len_list or '' }}</span>
                     </td>
                     <td class="border-start fs-6">{{ task.tags or '' }}</td>
                     <td class="border-start">{{ task.user.username or '' }}</td>
@@ -52,12 +62,16 @@
                     <td class="border-start text-nowrap">{{ icon_stage(task.stage) }}</td>
                 </tr>
             {% endfor %}
-
         </table>
     </div>
     {# Описание задачи #}
+
     <div class="col-4">
-        <h1>Описание задачи {{ task_id }}</h1>
+        <h1 class="">Описание задачи{{ task_id if task_id != 0 }}
+        <div class="float-end">
+        <a class="btn btn-success text-end" id='add_task' href="{{ url_for('.index',board_id=page, create_task=True) }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> Добавить задачу</a>
+        </div>
+        </h1>
         <ul class="nav nav-tabs nav-task">
             <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="#" id="manage">Описание задачи</a>
@@ -68,10 +82,10 @@
             <li class="nav-item">
                 <a class="nav-link" href="#" id="history">История</a>
             </li>
+            <li>
 
         </ul>
-        <form class="" id="task_desc" action="{{ url_for('.index', user_id=user_id, task_id=task_id, **filter) }}"
-              method="post">
+        <form class="" id="task_desc" action="{{ url_for('.index', **qs) }}" method="post">
             {{ form.csrf_token() }}
             <div class="task manage">
                 <label class="control-label" for="title">Заголовок</label>
@@ -109,36 +123,34 @@
                     </div>
                 </div>
                 <div class="row justify-content-between">
-                    {% if user %}
-
                         <div class="col-auto">
-                            <input type="radio" class="btn-check" name="stage" id="dev-job" autocomplete="off"
+                            <input type="radio" class="btn-check" name="stage" id="reset" autocomplete="off"
+                                   value="Not_started">
+                            <label class="btn btn-outline-dark" for="reset">Не в работе</label>
+
+                            <input type="radio" class="btn-check" name="stage" id="dev" autocomplete="off"
                                    value="Dev">
-                            <label class="btn btn-outline-primary" for="dev-job">Разработка</label>
-                            <input type="radio" class="btn-check" name="stage" id="dev-pause" autocomplete="off"
+                            <label class="btn btn-outline-primary" for="dev">Разработка</label>
+
+                            <input type="radio" class="btn-check" name="stage" id="Qa" autocomplete="off"
                                    value="Qa">
-                            <label class="btn btn-outline-warning" for="dev-pause">Qa</label>
-                            <input type="radio" class="btn-check" name="stage" id="dev-continue" autocomplete="off"
+                            <label class="btn btn-outline-warning" for="Qa">Qa</label>
+                            <input type="radio" class="btn-check" name="stage" id="Review" autocomplete="off"
                                    value="Review">
-                            <label class="btn btn-outline-secondary" for="dev-continue">Ревью</label>
-                            <input type="radio" class="btn-check" name="stage" id="qa-start" autocomplete="off"
+                            <label class="btn btn-outline-secondary" for="Review">Ревью</label>
+
+                            <input type="radio" class="btn-check" name="stage" id="Release" autocomplete="off"
                                    value="Release">
-                            <label class="btn btn-outline-success" for="qa-start">Готов к релизу</label>
-                            <input type="radio" class="btn-check" name="stage" id="qa-pause" autocomplete="off"
+                            <label class="btn btn-outline-success" for="Release">Готов к релизу</label>
+
+                            <input type="radio" class="btn-check" name="stage" id="Done" autocomplete="off"
                                    value="Done">
-                            <label class="btn btn-outline-success" for="qa-pause">Готов</label>
+                            <label class="btn btn-outline-success" for="Done">Готов</label>
                         </div>
-
-                    {% endif %}
-
                     <div class="col-auto">
                         <button type="submit" class="btn btn-primary">Сохранить</button>
                          {% if task_id !=0 %}
                          <a href="#modal-delete" data-bs-toggle="modal" class="btn btn-outline-danger">Удалить задачу</a>
-
-
-
-
                     </div>
                             <span class="text-muted my-2">Не забывай выставлять нужный этап для задачи</span>
 {% endif %}
@@ -175,7 +187,7 @@
             </ul>
         </div>
     </div>
-    <form method="post" action="{{ url_for('.del_task', board_id=page, task_id=task_id, user_id=user_id) }} ">
+    <form method="post" action="{{ url_for('.del_task', **qs) }} ">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div class="modal" id="modal-delete">
                 <div class="modal-dialog">
@@ -185,11 +197,11 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body">
-                            Задача будет удалена на совсем. лог появится в таблице 'history'
+                            Задача будет удалена на совсем. Запись появится в таблице 'history'
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-danger">Да</button>
-                            <button type="button" class="btn btn-default" data-bs-dismiss="modal">Отмена</button>
+                            <button type="submit" class="btn btn-danger">Удалить</button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
                         </div>
                     </div>
                 </div>

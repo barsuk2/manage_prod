@@ -4,7 +4,7 @@ from manage import bp
 from core import db, login_manager
 from core import csrf
 from models import *
-from jinja_filter import *
+from jinja_filter import filters
 
 
 def create_app():
@@ -14,5 +14,6 @@ def create_app():
     csrf.init_app(app)
     login_manager.init_app(app)
     app.register_blueprint(bp)
-    app.add_template_filter(len_list)
+    for filter in filters:
+        app.add_template_filter(filter)
     return app

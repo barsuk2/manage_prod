@@ -3,8 +3,7 @@
             <ul class="list-group list-group-flush">
                 <li class="list-group-item d-flex justify-content-between align-items-start"><a class="" href="{{ url_for('.index') }}">На главную</a><i class="fa fs-4 fa-home d-flex text-success" aria-hidden="true"></i>
                 </li>
-
-                <li class="list-group-item d-flex justify-content-between"><a href="{{ url_for('.index', user_id=current_user.id) }}">Мои задачи</a>
+                <li class="list-group-item d-flex justify-content-between"><a class="" href="{{ url_for('.index', user_id=current_user.id) }}">Мои задачи</a>
                 <i class="fa fs-4 fa-user d-flex text-success" aria-hidden="true"></i>
                 </li>
                 <li class="list-group-item d-flex justify-content-between align-items-start"><a href="{{ url_for('.index', user_id=user_id, filter='new') }}">Новое</a><span class="badge bg-primary rounded-pill">{{counter.new }}</span>
