@@ -55,7 +55,7 @@
                             {{ task.title }} </a><span class="badge bg-secondary rounded-pill" title="количество комментов">{{ task.comments|len_list or '' }}</span>
                     </td>
                     <td class="border-start fs-6">{{ task.tags or '' }}</td>
-                    <td class="border-start">{{ task.user.username or '' }}</td>
+                    <td class="border-start">{{ task.user.name or '' }}</td>
                     <td class="border-start text-danger">{{ task.deadline.strftime('%d-%m') if task.deadline }}</td>
                     <td class="border-start text-primary">{{ task.estimate or '' }}</td>
                     <td class="border-start text-primary " id="importance">{{ importance(task.importance) }}</td>
@@ -67,7 +67,7 @@
     {# Описание задачи #}
 
     <div class="col-4">
-        <h1 class="">Описание задачи{{ task_id if task_id != 0 }}
+        <h1 class="">Описание задачи {{ task_id if task_id != 0 }}
         <div class="float-end">
         <a class="btn btn-success text-end" id='add_task' href="{{ url_for('.index',board_id=page, create_task=True) }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> Добавить задачу</a>
         </div>
@@ -153,7 +153,7 @@
                          <a href="#modal-delete" data-bs-toggle="modal" class="btn btn-outline-danger">Удалить задачу</a>
                     </div>
                             <span class="text-muted my-2">Не забывай выставлять нужный этап для задачи</span>
-{% endif %}
+                {% endif %}
                 </div>
             </div>
             <div class="task comment">
@@ -161,7 +161,6 @@
                     {% if task.comments %}
                         {% for comment in task.comments %}
                             {% if comment %}
-
                             <li class="list-group-item "><textarea rows="5" class="form-control"
                                                                    name="comment_v">{{ comment }}</textarea>
                             {% endif %}
@@ -178,7 +177,7 @@
                 {% if history_task %}
                     {% for h in history_task %}
                         <li class="list-group-item d-flex justify-content-between">
-                        <dev>{{ loop.index }} - {{ h.created.strftime('%d-%m-%Y') }} <span class="text-primary">{{ h.user.username }}
+                        <dev>{{ loop.index }} - {{ h.created.strftime('%d-%m-%Y') }} <span class="text-primary">{{ h.user.name }}
                         </span>установил(а) статус-
                         <span class="badge bg-info rounded-pill">{{ h.stage if h.stage else h.task_status }}</span> </dev>
                     {% endfor %}

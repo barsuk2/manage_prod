@@ -11,9 +11,14 @@ class Users(db.Model, UserMixin):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String)
+    name = db.Column(db.String)
     email = db.Column(db.String, unique=True, nullable=False)
-    password_hash = db.Column(db.String)
+    mobile = db.Column(db.String)
+    city = db.Column(db.String)
+    password_hash = db.Column(db.String())
+    last_active = db.Column(db.DateTime(timezone=True), nullable=True)
+    banned = db.Column(db.Boolean, nullable=False, default=False, server_default='f')
+    deleted = db.Column(db.DateTime(timezone=True))  # Время, когда юзер самоубился
 
     task = db.relationship('Task', backref='user')
     history = db.relationship('History', backref='user')

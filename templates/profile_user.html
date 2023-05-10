@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% set page = request.view_args.get('board_id') or 'Actual' %}
+{% set task_id = request.view_args.get('task_id') or 0 %}
+{% set user_id = request.view_args.get('user_id') or 0 %}
+
+
+{% block body %}
+    <div class="row">
+    {# Меню#}
+    {% include 'menu_admin.html' %}
+
+    {# Список задач #}
+    <div class="col-6">
+    <div class="row ms-5">
+        <div class="col-4">
+            <div class="">
+                <div class="card-body mb-3">
+                        <img class="mb-3" src="/static/person.png" width="200" height="200">
+                    <div class="d-grid gap-2 col-6">
+                        {% if user.id == current_user.id %}
+                            <button type="button" class="btn btn-success btn-sm text-nowrap" data-bs-toggle="modal"
+                                    data-bs-target="#modal-photo-upload">
+                                Загрузить фото
+                            </button>
+                        {% endif %}
+                    <a href="" class="btn btn-info btn-sm text-light">Редактировать</a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    <div class="col-lg-6">
+                <div class="card">
+                    <div class="card-header">
+                    <div class="row justify-content-between">
+                        <div class="col-auto text-nowrap"><h1>{{ user.name }}</h1></div>
+                        <div class="col-auto">Был на сайте: </div>
+                    </div>
+                    </div>
+                    <div class="card-body">
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <h4>
+                    Отдел:
+                    <a href="">,</a>
+
+                    должность: </h4>
+                            </li>
+                                <li class="list-group-item">
+                                    Мобильный телефон:
+                                </li>
+                                <li class="list-group-item">
+                                    Telegram: <a href="http://t.me/"></a>
+                                </li>
+                            <li class="list-group-item">
+                                E-mail: <a href="mailto:{{ user.email }}">{{ user.email }}</a>
+                            </li>
+                                <li class="list-group-item">
+                                День рождения:
+                                </li>
+                            <li class="list-group-item">
+                                Город:
+                                </li>
+                            <li class="list-group-item">
+                                <h4>Права:</h4>
+
+                                    Прав на сайте нет.
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+    </div>
+    </div>
+    {# Описание задачи #}
+
+    <div class="col-4">
+    </div>
+
+
+{% endblock body %}
+{% block script %}
+    {#<script>
+        $(function () {
+            let $task = $('tr#task'), $block_task_manage = $('.task.manage'), $block_task_history = $('.task.history'),
+                $block_task_comment = $('.task.comment'), board = '{{ page }}';
+            $block_task_comment.hide()
+            $block_task_history.hide()
+            $block_task_manage.show()
+
+            // В зависимости от важности покрасим строки таблицы
+            $task.each(function () {
+                if ($(this).find('#importance i').hasClass('text-danger')) {
+                    $(this).find('#id').addClass('border-start border-5 border-danger')
+                } else if ($(this).find('#importance i').hasClass('text-success')) {
+                    $(this).find('#id').addClass('border-start border-5 border-success')
+                }
+            });
+            // подсветить доску
+            $(`#${board}`).addClass('active')
+
+            // Подсвечивает активную задачу в таблице
+            #}{#$task.on('click', function () {
+                var task_id = $(this).find('#task_id').text()
+                        url = '{{ url_for('.index') }}' + `${board}/` + `task/${task_id}`
+                location.assign(url)
+                description_task.focus()
+            });#}{#
+            // Отображение нажатого радио баттона stage
+            $(':input[name="stage"]').each(function () {
+                if ($(this).attr('value') === '{{ task.stage }}') {
+                    $(this).attr('checked', 'checked')
+                }
+            });
+            // Навигация задачи - вкладки
+            $('.nav-task li').on('click', function () {
+                this_id = $(this).find('a').attr('id')
+                // блок задача - комментарии
+                $(this).find('a').addClass("active")
+                $('.nav-task li').not($(this)).find('a').removeClass('active')
+                // отображение блока комментарий, управление или история
+                $('.task').each(function () {
+                    if ($(this).hasClass(this_id)) {
+                        $(this).show()
+                        $block_task_history.show()
+
+                    } else {
+                        $(this).hide()
+                    }
+                })
+
+            });
+        });
+    </script>#}
+{% endblock script %}

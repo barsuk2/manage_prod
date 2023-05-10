@@ -57,7 +57,7 @@ def index(board_id=None, task_id=None, create_task=None, user_id=None):
     before_task = task.__dict__
     form = TaskFormEdit(obj=task)
     users = Users.query.all()
-    form.user_id.choices = [(0, '')] + [(user.id, user.username) for user in users]
+    form.user_id.choices = [(0, '')] + [(user.id, user.name) for user in users]
     q = db.session.query(Task)
 
     if user_id:
@@ -159,5 +159,12 @@ def del_task(task_id, user_id=None, board_id=None):
 @bp.route('/users')
 @login_required
 def get_users():
-    users = Users.query.order_by(Users.username).all()
+    users = Users.query.order_by(Users.name).all()
     return render_template('users.html', users=users)
+
+
+@bp.route('/users/profole/<int:user_id>')
+@login_required
+def user_profile(user_id):
+    user = Users.query.get_or_404(user_id)
+    return render_template('profile_user.html', user=user)
