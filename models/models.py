@@ -19,7 +19,6 @@ class Users(db.Model, UserMixin):
     last_active = db.Column(db.DateTime(timezone=True), nullable=True)
     banned = db.Column(db.Boolean, nullable=False, default=False, server_default='f')
     deleted = db.Column(db.DateTime(timezone=True))  # Время, когда юзер самоубился
-
     task = db.relationship('Task', backref='user')
     history = db.relationship('History', backref='user')
 
@@ -70,7 +69,7 @@ class Task(db.Model):
     description = db.Column(db.String)
     tags = db.Column(db.String, nullable=True)
     importance = db.Column(db.Enum(*list(IMPORTANCE.keys()), name='importance'))
-    comments = db.Column(ARRAY(db.String(32), zero_indexes=True))
+    comments = db.Column(ARRAY(db.Text(), zero_indexes=True))
 
     def return_as_json(self):
         resp = {

@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{#{% set page = request.view_args.get('board_id') or 'Actual' %}#}
+{#{% set task_id = request.view_args.get('task_id') or 0 %}#}
+{#{% set user_id = request.view_args.get('user_id') or 0 %}#}
+
+
+{% block body %}
+
+    {% if user.id %}
+        <form id="form-delete" class="form-inline" method="post"
+              action="{{ url_for('.del_user', user_id=user.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        </form>
+    {% endif %}
+
+
+    <div class="row">
+    {# Меню#}
+    {% include 'menu_admin.html' %}
+
+    {# Список задач #}
+    <div class="col-6">
+    {% if user.id %}
+        <form id="form-delete" class="form-inline" method="post"
+              action="">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        </form>
+    {% endif %}
+
+
+    <form method="POST" id="form-edit" class="form-horizontal" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="row mb-3">
+            <div class="col-2 text-end"><label class="">{{ form.name.label }}</label></div>
+            <div class="col-10">{{ form.name(class='form-control') }}</div>
+        </div>
+        <!-- блок отдел должность-->
+        <div class="row">
+            <div class="col-12">
+                <div class="row mb-3">
+                    <div class="col-2 text-end"><label>Мобильный</label></div>
+                    <div class="col-4">{{ form.mobile(class='form-control') }}</div>
+                    <div class="col-2 text-end"><label>Никнейм в "Телеграмме"</label></div>
+                    <div class="col-4">{{ form.telegram(class='form-control') }}</div>
+                </div>
+
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+
+                <div class="row mb-3">
+                    <div class="col-2 text-end"><label>{{ form.email.label }}</label></div>
+                    <div class="col-4">{{ form.email(class='form-control') }}
+                        <div class="form-check mt-3">{{ form.banned(class="form-check-input") }}<label
+                                class="form-check-label">Вход заблокирован</label>
+                        </div>
+                    </div>
+                    <div class="col-2 text-end"><label>{{ form.password.label }}</label></div>
+                    <div class="col-4">
+                        <div class="input-group">
+                            {% set placeholder = 'пароль задан' if user.password_hash else '' %}
+                            {{ form.password(class='form-control', placeholder= placeholder) }}
+                            <button class="btn btn-info text-light" type="button" id="gen_pass"
+                                    title="Сгенерировать новый пароль"><i class="fa fa-lightbulb-o fs-5"
+                                                                          aria-hidden="true"></i></button>
+                            {% if user.id %}
+                                <p class="text-warning mt-1" id="warn-create-password">У пользователя уже был пароль.
+                                    Если не
+                                    хотите его менять, просто очистите это поле.</p>
+                            {% endif %}
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="row">
+            <h1 class="offset-2">Роли</h1>
+
+        </div>
+
+        <div class="row justify-content-between">
+            <div class="col-auto offset-2 mb-3">
+                <button class="btn btn-primary">Сохранить</button>
+                {% if user.id %}
+                    <a href="#modal-delete" data-bs-toggle="modal" class="btn btn-outline-danger">Удалить</a>
+                {% endif %}
+                <a href="{{ url_for('.get_users') }}" class="btn btn-secondary">Отмена</a>
+            </div>
+
+        </div>
+    </form>
+    {# Описание задачи #}
+    <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="modal" id="modal-delete">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Удалить задачу?</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    Задача будет удалена на совсем. Запись появится в таблице 'history'
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger" id="btn-delete">Удалить</button>
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </form>
+{% endblock body %}
+{% block script %}
+    <script>
+        $(function () {
+            let url = '{{url_for(".generate_pass")}}';
+            $('#gen_pass ').on('click', function () {
+                $.getJSON(url).done(function (data) {
+                    pass = JSON.parse(data)
+                    $(':input#password').val(pass.pass)
+                })
+            })
+
+        });
+    </script>
+    <script type="text/javascript">
+        $("#btn-delete").on("click", function (e) {
+            e.preventDefault();
+            $("#form-delete").submit();
+        });
+    </script>
+{% endblock script %}

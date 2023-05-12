@@ -23,7 +23,7 @@
                                 Загрузить фото
                             </button>
                         {% endif %}
-                    <a href="" class="btn btn-info btn-sm text-light">Редактировать</a>
+                    <a href="{{ url_for('.user_edit', user_id=user.id) }}" class="btn btn-info btn-sm text-light">Редактировать</a>
 
                     </div>
                 </div>
@@ -39,18 +39,12 @@
                     </div>
                     <div class="card-body">
                         <ul class="list-group">
-                            <li class="list-group-item">
-                                <h4>
-                    Отдел:
-                    <a href="">,</a>
 
-                    должность: </h4>
-                            </li>
                                 <li class="list-group-item">
                                     Мобильный телефон:
                                 </li>
                                 <li class="list-group-item">
-                                    Telegram: <a href="http://t.me/"></a>
+                                    Telegram: <a href="http://t.me/">qq</a>
                                 </li>
                             <li class="list-group-item">
                                 E-mail: <a href="mailto:{{ user.email }}">{{ user.email }}</a>

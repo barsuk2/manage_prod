@@ -1,15 +1,14 @@
-import time
-from datetime import datetime, date, timedelta
-
-from flask import Blueprint, redirect, url_for, flash
-from flask import render_template, abort, request
+import string
+import secrets
+import json
+from datetime import datetime, timedelta
 from flask_login import login_required, login_user, logout_user, current_user
+from flask import Blueprint, redirect, url_for, flash, render_template, abort, request, jsonify
 
+from . import bp
 from core import db
 from models import Task, Users, History
-from manage.forms import TaskFormEdit, LoginForm, TaskCommentForm
-
-bp = Blueprint('/', __name__, url_prefix='/')
+from manage.forms import TaskFormEdit, LoginForm, UserForm
 
 
 def loging_stage_task(task, task_id, before_task=None):
@@ -36,14 +35,15 @@ def logout():
 
 @bp.route('/', methods=('POST', 'GET'))
 @bp.route('/<board_id>', methods=('POST', 'GET'))
-@bp.route('/user/<int:user_id>  /tasks', methods=('POST', 'GET'))
+@bp.route('/user/<int:user_id>/tasks', methods=('POST', 'GET'))
 @bp.route('/<board_id>/task/<int:task_id>', methods=('POST', 'GET'))
-@bp.route('/user/<int:user_id>/tasks/<int:task_id>', methods=('POST', 'GET'))
+@bp.route('/user/<int:user_id>/task/<int:task_id>', methods=('POST', 'GET'))
 @login_required
-def index(board_id=None, task_id=None, create_task=None, user_id=None):
+def index(board_id=None, task_id=None, user_id=None):
     counter = {}
     history_task = []
     user = None
+    create_task = request.args.get('create_task')
     if board_id and board_id not in Task.BOARDS:
         abort(400, 'Страницы не существует')
     if not board_id:
@@ -113,14 +113,13 @@ def index(board_id=None, task_id=None, create_task=None, user_id=None):
         # Удаление задачи: Задача физически не удаляется, а переноситься на доску готово
         if task.stage == 'Done':
             task.board = 'Complete'
-            query_string = {'user_id': user_id}
         db.session.add(task)
         db.session.commit()
         loging_stage_task(task, task_id, before_task)
 
         return redirect(url_for('.index', **query_string))
     return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter,
-                           history_task=history_task, user=user, filter=filter)
+                           history_task=history_task, user=user, filter=filter, create_task=create_task)
 
 
 @bp.route('/login/', methods=['GET', 'POST'])
@@ -160,11 +159,51 @@ def del_task(task_id, user_id=None, board_id=None):
 @login_required
 def get_users():
     users = Users.query.order_by(Users.name).all()
-    return render_template('users.html', users=users)
+    return render_template('users/users.html', users=users)
+
+
+@bp.post('/users/delete/<int:user_id>')
+@login_required
+def del_user(user_id):
+    user = Users.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('.get_users'))
 
 
 @bp.route('/users/profole/<int:user_id>')
 @login_required
 def user_profile(user_id):
     user = Users.query.get_or_404(user_id)
-    return render_template('profile_user.html', user=user)
+    return render_template('users/profile_user.html', user=user)
+
+
+@bp.route('/users/user/<int:user_id>', methods=('POST', 'GET'))
+@bp.route('/users/user/new', methods=('POST', 'GET'))
+@login_required
+def user_edit(user_id=None):
+    if user_id:
+        user = Users.query.get_or_404(user_id)
+    else:
+        user = Users()
+    form = UserForm(obj=user)
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            if form.password.data:
+                form.password.data = user.set_password(form.password.data)
+            form.populate_obj(user)
+            db.session.add(user)
+            db.session.commit()
+            return redirect(url_for('.user_edit', user_id=user.id))
+        else:
+            flash(form.errors, 'danger')
+    return render_template('users/edit_user.html', user=user, form=form)
+
+
+@bp.get('/user/generate_pass')
+def generate_pass():
+    alphabet = string.ascii_letters + string.digits + '-!"#$%&?@'
+    password = ''.join(secrets.choice(alphabet) for _ in range(6))
+    pass_ = json.dumps({'pass': password})
+    return jsonify(pass_)
+

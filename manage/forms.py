@@ -28,3 +28,11 @@ class TaskCommentForm(FlaskForm):
     title = StringField(validators=[v.Optional()])
     description = TextAreaField(validators=[v.Optional()])
 
+
+class UserForm(FlaskForm):
+    name = StringField('Имя', validators=[v.DataRequired()])
+    email = EmailField('Email', validators=[v.DataRequired()])
+    banned = BooleanField(default=None)
+    password = StringField()
+    mobile = StringField()
+    telegram = StringField()

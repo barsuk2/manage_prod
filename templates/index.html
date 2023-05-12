@@ -2,6 +2,7 @@
 {% set page = request.view_args.get('board_id') or 'Actual' %}
 {% set task_id = request.view_args.get('task_id') or 0 %}
 {% set user_id = request.view_args.get('user_id') or 0 %}
+{% set new = request.view_args.get('new') or '' %}
 
 {% set qs = {'board_id': page} %}
 
@@ -66,12 +67,17 @@
     </div>
     {# Описание задачи #}
 
-    <div class="col-4">
-        <h1 class="">Описание задачи {{ task_id if task_id != 0 }}
+    <div class="col-4" >
+        <h1>
+
+        <span class="invisible">Задача</span>
         <div class="float-end">
-        <a class="btn btn-success text-end" id='add_task' href="{{ url_for('.index',board_id=page, create_task=True) }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> Добавить задачу</a>
+        {% if page != 'Complete' %}
+        <a class="btn btn-success text-end" id='add_task' href="{{ url_for('.index',board_id=page, create_task=1) }}"><i class="fa fa-plus-circle" aria-hidden="true"></i>Добавить задачу</a>
+        {% endif %}
         </div>
         </h1>
+        {%  if task_id != 0 or create_task%}
         <ul class="nav nav-tabs nav-task">
             <li class="nav-item">
                 <a class="nav-link active" aria-current="page" href="#" id="manage">Описание задачи</a>
@@ -206,6 +212,8 @@
                 </div>
             </div>
         </form>
+                {% endif %}
+
 
 {% endblock body %}
 {% block script %}
@@ -216,6 +224,8 @@
             $block_task_comment.hide()
             $block_task_history.hide()
             $block_task_manage.show()
+
+
 
             // В зависимости от важности покрасим строки таблицы
             $task.each(function () {
