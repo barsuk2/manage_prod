@@ -1,5 +1,7 @@
+import hashlib
 from collections import OrderedDict
 
+from flask import current_app
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 
@@ -22,11 +24,12 @@ class Users(db.Model, UserMixin):
     task = db.relationship('Task', backref='user')
     history = db.relationship('History', backref='user')
 
-    def set_password(self, password):
-        self.password_hash = generate_password_hash(password)
+    @staticmethod
+    def hash_password(data):
+        return hashlib.md5((str(data) + current_app.config['SECRET_KEY']).encode()).hexdigest()
 
     def check_password(self, password):
-        return check_password_hash(self.password_hash, password)
+        return Users.hash_password(password) == self.password_hash
 
     @property
     def is_active(self):
@@ -51,7 +54,7 @@ class Task(db.Model):
 
     # BOARDS = {'Actual': 'Актуальные', 'Complete': 'Готовые', 'Plans': 'В планах', 'Pause': 'На паузе'}
     BOARDS = OrderedDict(
-        [('Plans', 'В планах'), ('Actual', 'Актуальные'), ('Pause', 'На паузе'), ('Complete', 'Готовые')])
+        [('Plans', 'В планах'), ('Actual', 'Актуальные'), ('Complete', 'Готовые')])
     STATUS = ('Job', 'Pause', 'Complete', 'Project', 'Delete', 'Created', 'Deleted')
     STAGE = ('Dev', 'Qa', 'Review', 'Release', 'Done', 'Not_started')
     IMPORTANCE = {'high': 'Высокая', 'medium': 'Средняя', 'normal': 'Обычная', 'low': 'Низкая'}
@@ -62,6 +65,7 @@ class Task(db.Model):
     task_status = db.Column(db.Enum(*STATUS, name='task_status'))
     stage = db.Column(db.Enum(*STAGE, name='stage'), default='Not_started', server_default='Not_started')
     created = db.Column(db.DateTime(timezone=True), server_default=db.text('now()'), nullable=False)
+    completed = db.Column(db.DateTime(timezone=True), nullable=True)
     deadline = db.Column(db.DateTime(timezone=True), nullable=True)
     estimate = db.Column(db.Float, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id', ondelete='SET NULL', onupdate='CASCADE'))

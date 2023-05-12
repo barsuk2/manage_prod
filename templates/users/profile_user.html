@@ -34,7 +34,7 @@
                     <div class="card-header">
                     <div class="row justify-content-between">
                         <div class="col-auto text-nowrap"><h1>{{ user.name }}</h1></div>
-                        <div class="col-auto">Был на сайте: </div>
+                        <div class="col-auto">Был на сайте: {{ user.last_active.strftime('%d-%m-%Y %H:%M') if user.last_active }}</div>
                     </div>
                     </div>
                     <div class="card-body">
