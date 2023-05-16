@@ -18,21 +18,37 @@ class AddFakeTasks(Command):
         Option('--total_tags', '-t', help='Какое количество задач добавить каждому юзеру'),
     )
 
-    def run(self, total_tags):
+    def run(self, total_tags=0):
+        print()
         details = string.ascii_letters
-        board = list(Task.BOARDS.keys())
+        boards = list(Task.BOARDS.keys())
         users = Users.query.all()
-        stage = Task.STAGE
+        stages = Task.STAGE
         month = date.today().month
+        importance = list(Task.IMPORTANCE.keys())
+        tags = ['feature', 'bugfix', 'front', 'end']
 
         for user in users:
             for _ in range(int(total_tags)):
                 created = datetime.now() - timedelta(days=1 * 30 * random.randint(0, month))
                 deadline = created + timedelta(days=random.randint(0, 10))
                 completed = created + timedelta(days=random.randint(0, 20))
-                task = Task(board=secrets.choice(board), stage=secrets.choice(stage), description='fake',
-                            created=created, deadline=deadline, completed=completed,
-                            user_id=user.id, title=''.join(secrets.choice(details) for _ in range(10)))
+                board = secrets.choice(boards)
+                stage = secrets.choice(stages)
+                importance_ = secrets.choice(importance)
+                tag = secrets.choice(tags)
+                user_id = user.id
+                if stage == 'Done':
+                    board = 'Complete'
+
+                if board == 'Complete':
+                    stage = 'Done'
+                if board == 'Plans':
+                    deadline = None
+                    user_id = None
+                task = Task(board=board, stage=stage, description='fake',
+                            created=created, deadline=deadline, completed=completed, importance=importance_, tags=tag,
+                            user_id=user_id, title=''.join(secrets.choice(details) for _ in range(10)))
                 # tags =
                 # importance =
                 # comments =
@@ -41,8 +57,15 @@ class AddFakeTasks(Command):
                 # estimate =
                 db.session.add(task)
             db.session.flush()
-
             db.session.commit()
+
+
+class DelFakeTasks(Command):
+    def run(self):
+        fake_tasks = Task.query.filter(Task.description == 'fake')
+        for task in fake_tasks:
+            db.session.delete(task)
+        db.session.commit()
 
 
 class AddFakeUsers(Command):
@@ -65,6 +88,7 @@ class AddFakeUsers(Command):
 
 
 class Super(Command):
+    '''Создает super юзера'''
     option_list = (
         Option('--name', '-n', help='Имя пользователя'),
         Option('--email', '-e', help='Email пользователя'),
@@ -81,6 +105,7 @@ class Super(Command):
 manager.add_command('add-fake-users', AddFakeUsers())
 manager.add_command('super', Super())
 manager.add_command('add-fake-task', AddFakeTasks())
+manager.add_command('del-fake-task', DelFakeTasks())
 
 if __name__ == "__main__":
     manager.run()

@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% set page = request.view_args.get('board_id') or 'Actual' %}
+{% set task_id = request.view_args.get('task_id') or 0 %}
+{% set user_id = request.view_args.get('user_id') or 0 %}
+{% set new = request.view_args.get('new') or '' %}
+
+
+{#{% set qs = qs.update(filter) %}#}
+{% block headers %}
+
+{% endblock %}
+
+
+{% block body %}
+    <div class="row">
+    {# Меню #}
+    {% include 'menu.html' %}
+
+    {# Список задач #}
+    <div class="col-6">
+        <h1>Статистика</h1>
+        <div id='chart' class='chart w-50'></div>
+    </div>
+    {# Описание задачи #}
+    <div class="col-4">
+    </div>
+
+
+{% endblock body %}
+{% block script %}
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+    <script>
+        var graphs = '{{graphJSON | safe}}';
+        chart = document.getElementById('chart');
+        graphs = JSON.parse(graphs)
+        var data = [
+            {
+                x: ['giraffes', 'orangutans', 'monkeys'],
+                y: [20, 14, 23],
+                type: 'bar',
+                d: 'asda'
+            }
+        ]
+        console.log(graphs)
+        console.log(data)
+
+        Plotly.plot(chart, graphs);
+        {#Plotly.newPlot('chart',, {});#}
+    </script>
+{% endblock script %}
+

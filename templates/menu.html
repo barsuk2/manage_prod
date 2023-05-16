@@ -45,11 +45,49 @@
             </ol>
 
             <h2 class="mt-5">Admin</h2>
-            <ul class="list-group list-group-flush ">
-                <li class="list-group-item d-flex justify-content-between">Статистика <i
-                        class="fa fs-4 fa-bar-chart text-info" aria-hidden="true"></i>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item "><div class="d-flex justify-content-between">Статистика
+                </div>
+            <ol class="list-group list-group-flush">
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold"><a href="{{ url_for('.get_statistic_task') }}">По всем задачам</a></div>
+                    </div>
+                    <span class="badge bg-primary rounded-pill">{{ counter.Dev }}</span>
+                </li>
+                <li class="list-group-item d-flex justify-content-between align-items-start">
+                    <div class="ms-2 me-auto">
+                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, filter='Qa') }}">По юзеру</a></div>
+                    </div>
+                    <span class="badge bg-warning rounded-pill">{{ counter.Qa }}</span>
+                </li>
+{#                <li class="list-group-item d-flex justify-content-between align-items-start">#}
+{#                    <div class="ms-2 me-auto">#}
+{#                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, filter='Review') }}">На ревью</a></div>#}
+{#                    </div>#}
+{#                    <span class="badge bg-secondary rounded-pill">{{ counter.Review }}</span>#}
+{#                </li>#}
+{#                <li class="list-group-item d-flex justify-content-between align-items-start">#}
+{#                    <div class="ms-2 me-auto">#}
+{#                        <div class="fw-bold"><a href="{{ url_for('.index', user_id=user_id, filter='Release') }}">Готов к релизу</a></div>#}
+{#                    </div>#}
+{#                    <span class="badge bg-success rounded-pill">{{ counter.Release }}</span>#}
+{#                </li>#}
+{#                <li class="list-group-item d-flex justify-content-between align-items-start">#}
+{#                    <div class="ms-2 me-auto">#}
+{#                        <span class="text-muted">Статистика отображается только для доски "Актуальное"</span>#}
+{#                    </div>#}
+{#                </li>#}
+
+
+            </ol>
+
                 </li>
                 <li class="list-group-item d-flex justify-content-between"><a href="{{ url_for('.get_users') }}">Юзеры и роли</a> <i
                         class="fa   fs-4 fa-users text-info" aria-hidden="true"></i></li>
             </ul>
-        </div>
+
+</div>
+
+
+

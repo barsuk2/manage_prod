@@ -37,6 +37,9 @@
                 <th class="col border-start " title="Важность"><i
                         class="fa fa-exclamation-triangle fa-1x text-danger"></i></th>
                 <th class="col border-start">Этап</th>
+                {% if page == 'Complete' %}
+                <th class="col border-start">Готово</th>
+                {% endif %}
             </tr>
             </thead>
             {% for task in tasks %}
@@ -57,10 +60,13 @@
                     </td>
                     <td class="border-start fs-6">{{ task.tags or '' }}</td>
                     <td class="border-start">{{ task.user.name or '' }}</td>
-                    <td class="border-start text-danger">{{ task.deadline.strftime('%d-%m') if task.deadline }}</td>
+                    <td class="border-start text-danger text-nowrap">{{ task.deadline.strftime('%d-%m-%Y') if task.deadline }}</td>
                     <td class="border-start text-primary">{{ task.estimate or '' }}</td>
                     <td class="border-start text-primary " id="importance">{{ importance(task.importance) }}</td>
                     <td class="border-start text-nowrap">{{ icon_stage(task.stage) }}</td>
+                    {% if page == 'Complete' %}
+                <td class="border-start text-nowrap">{{ task.completed.strftime('%d-%m-%Y') if task.completed }}</td>
+                {% endif %}
                 </tr>
             {% endfor %}
         </table>

@@ -1,9 +1,14 @@
+import json
 import string
 import secrets
-import json
+
+import plotly
+import pandas as pd
+import plotly.graph_objs as go
+import plotly.express as px
 from datetime import datetime, timedelta
 from flask_login import login_required, login_user, logout_user, current_user
-from flask import Blueprint, redirect, url_for, flash, render_template, abort, request, jsonify
+from flask import redirect, url_for, flash, render_template, abort, request, jsonify
 
 from . import bp
 from core import db
@@ -11,11 +16,24 @@ from models import Task, Users, History
 from manage.forms import TaskFormEdit, LoginForm, UserForm
 
 
+def counter_tasks(tasks=None):
+    """Возвращает количество задач на доске Актуальное"""
+    counter = {}
+    if not tasks:
+        tasks = Task.query.filter(Task.board == 'Actual')
+    for stage in Task.STAGE:
+        counter[stage] = tasks.filter(Task.stage == stage).count()
+    counter['importance'] = tasks.filter(Task.importance.in_(('high', 'medium'))).count()
+    counter['new'] = tasks.filter(datetime.now() - Task.created <= timedelta(days=1)).count()
+    return counter
+
+
 def loging_stage_task(task, task_id, before_task=None):
+    """ Добавляет в таблицу History движение задачи - """
     qs = {}
     if task.id != task_id:
         qs = {'task_status': 'Created', 'title': task.title}
-    #     Добавляем новый
+    # Добавляем новый
     elif task.stage != before_task['stage']:
         qs = {'task_status': 'Job'}
     elif task.board == 'Complete':
@@ -67,12 +85,7 @@ def index(board_id=None, task_id=None, user_id=None):
     actual = q.filter(Task.board == 'Actual')
     q = q.filter(Task.board == board_id)
 
-    # Считает количество задач на доске актуальное
-    for stage in Task.STAGE:
-        counter[stage] = actual.filter(Task.stage == stage).count()
-    counter['importance'] = actual.filter(Task.importance.in_(('high', 'medium'))).count()
-    counter['new'] = actual.filter(datetime.now() - Task.created <= timedelta(days=1)).count()
-
+    counter = counter_tasks(q)
     # Фильтры для основного меню по доске Actual
     filter = request.args.get('filter')
     if filter:
@@ -208,4 +221,40 @@ def generate_pass():
     return jsonify(pass_)
 
 
+@bp.get('/statistic/tasks')
+def get_statistic_task():
+    counter = counter_tasks()
+    # Generate the figure **without using pyplot**.
+    df = pd.DataFrame({
+        #     'Месяц': ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь'],
+        #     'Количество': [4, 5, 2, 2, 4, 4],
+        #     # 'Доски': ['Актуальные', 'Готово', 'План', 'Актуальные', 'Готово', 'План', 'Актуальные', 'Готово', 'План']
+        #     'City': ['SF', 'SF', 'SF', 'Montreal', 'Montreal', 'Montreal']
+        # })
+        # fig = px.bar(df, x='Месяц', y='Количество', color='City', barmode='group')
+        'Fruit': ['qweqwe', 'Oranges', 'Апрель', 'Apples', 'Oranges',
+                  'Bananas'],
+        'Amount': [4, 1, 2, 2, 4, 5],
+        'City': ['SF', 'SF', 'SF', 'Montreal', 'Montreal', 'Montreal']
 
+    })
+    fig = px.bar(df, x='Fruit', y='Amount', color='City',
+                 barmode='group')
+    # fig = px.bar(df, x='Месяц', y='Количество', color='Доски', barmode='group')
+    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+    print(graphJSON)
+    return render_template('statistic/index.html', counter=counter, graphJSON=graphJSON)
+
+# @bp.route("/plot")
+# def hello():
+#     # Generate the figure **without using pyplot**.
+#     df = pd.DataFrame({
+#         'Fruit': ['Apples', 'Oranges', 'Bananas', 'Apples', 'Oranges',
+#                   'Bananas'],
+#         'Amount': [4, 1, 2, 2, 4, 5],
+#         'City': ['Казань', 'Казань', 'Казань', 'Нижний', 'Нижний', 'Нижний']
+#     })
+#     fig = px.bar(df, x='Fruit', y='Amount', color='City',
+#                  barmode='group')
+#     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+#     return f"<img src='data:image/png;base64,{data}'/>"
