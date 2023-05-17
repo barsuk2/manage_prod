@@ -1,4 +1,7 @@
 # Task tracker
+Трекер задач - это основная часть проекта, которая предназначена для отслеживания и управления задачами. Она включает в 
+себя функции создания, редактирования и удаления задач, а также просмотра списка задач и их статусов. 
+Отдельный раздел - статистика.
 
 ## Установка движка
 
@@ -25,8 +28,8 @@ $ . ~/.bashrc
 $ mkvirtualenv -p python3 manage_prod
 $ workon manage_prod
 $ pip install -r requirements.txt
-$ sudo -u postgres psql -c "CREATE USER mp_base ENCRYPTED PASSWORD 'mp_base'"
-$ sudo -u postgres psql -c "CREATE DATABASE roompark OWNER mp_base"
+$ sudo -u postgres psql -c "CREATE USER mp_owner ENCRYPTED PASSWORD 'mp_owner'"
+$ sudo -u postgres psql -c "CREATE DATABASE mp_base OWNER mp_base"
 ```
 
 
