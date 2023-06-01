@@ -1,4 +1,3 @@
-QWER = 'HQ'
 DEBUG = True
 SQLALCHEMY_DATABASE_URI = 'postgresql://mp_owner:mp_owner@localhost:5432/mp_base'
 # Необходим для механизма генерации csrf_token

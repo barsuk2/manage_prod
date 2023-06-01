@@ -1,6 +1,12 @@
+import datetime
+
 from flask_wtf import FlaskForm
+from sqlalchemy import extract
 from wtforms import TextAreaField, StringField, SelectField, DateField, FloatField, DecimalField, EmailField, \
     BooleanField, PasswordField, RadioField
+
+from flask import current_app
+from core import db
 from models import Task
 from wtforms import validators as v
 
@@ -14,7 +20,8 @@ class TaskFormEdit(FlaskForm):
     estimate = DecimalField(validators=[v.Optional()])
     tags = StringField(validators=[v.Optional()])
     stage = StringField(validators=[v.Optional()])
-    importance = SelectField(choices=[('', 'Нет')] + [(x, y) for x, y in Task.IMPORTANCE.items()], validators=[v.Optional()])
+    importance = SelectField(choices=[('', 'Нет')] + [(x, y) for x, y in Task.IMPORTANCE.items()],
+                             validators=[v.Optional()])
     # comments = TextAreaField(validators=[v.Optional()])
 
 
@@ -36,3 +43,8 @@ class UserForm(FlaskForm):
     password = StringField()
     mobile = StringField()
     telegram = StringField()
+
+
+class StatisticFilter(FlaskForm):
+    user = SelectField(validators=[v.Optional()])
+    period = SelectField(validators=[v.Optional()])

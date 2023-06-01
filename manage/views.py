@@ -3,17 +3,18 @@ import string
 import secrets
 
 import plotly
-import pandas as pd
 import plotly.graph_objs as go
 import plotly.express as px
-from datetime import datetime, timedelta
+import datetime
+from sqlalchemy import extract, literal_column
+import pandas as pd
 from flask_login import login_required, login_user, logout_user, current_user
-from flask import redirect, url_for, flash, render_template, abort, request, jsonify
+from flask import redirect, url_for, flash, render_template, abort, request, jsonify, current_app
 
 from . import bp
 from core import db
 from models import Task, Users, History
-from manage.forms import TaskFormEdit, LoginForm, UserForm
+from manage.forms import TaskFormEdit, LoginForm, UserForm, StatisticFilter
 
 
 def counter_tasks(tasks=None):
@@ -24,7 +25,7 @@ def counter_tasks(tasks=None):
     for stage in Task.STAGE:
         counter[stage] = tasks.filter(Task.stage == stage).count()
     counter['importance'] = tasks.filter(Task.importance.in_(('high', 'medium'))).count()
-    counter['new'] = tasks.filter(datetime.now() - Task.created <= timedelta(days=1)).count()
+    counter['new'] = tasks.filter(datetime.datetime.now() - Task.created <= datetime.timedelta(days=1)).count()
     return counter
 
 
@@ -58,7 +59,6 @@ def logout():
 @bp.route('/user/<int:user_id>/task/<int:task_id>', methods=('POST', 'GET'))
 @login_required
 def index(board_id=None, task_id=None, user_id=None):
-    counter = {}
     history_task = []
     user = None
     create_task = request.args.get('create_task')
@@ -97,9 +97,6 @@ def index(board_id=None, task_id=None, user_id=None):
     tasks = q.order_by(Task.created.desc())
 
     if request.method == 'POST':
-        # Костыль на случай, если не приходит юзер
-        stage_before = task.stage
-
         if form.user_id.data == 0:
             form.user_id.data = None
 
@@ -117,13 +114,9 @@ def index(board_id=None, task_id=None, user_id=None):
         comments.append(form_comment)
         task.comments = comments
         form.populate_obj(task)
-
-        if user_id:
-            task.user_id = current_user.id
-            query_string = {'user_id': user_id, 'task_id': task_id}
-        else:
-            query_string = {'board_id': board_id, 'task_id': task_id}
+        query_string = {'user_id': user_id, 'task_id': task_id}
         # Удаление задачи: Задача физически не удаляется, а переноситься на доску готово
+        query_string.update({'filter': filter})
         if task.stage == 'Done':
             task.board = 'Complete'
         db.session.add(task)
@@ -224,37 +217,94 @@ def generate_pass():
 @bp.get('/statistic/tasks')
 def get_statistic_task():
     counter = counter_tasks()
-    # Generate the figure **without using pyplot**.
-    df = pd.DataFrame({
-        #     'Месяц': ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь'],
-        #     'Количество': [4, 5, 2, 2, 4, 4],
-        #     # 'Доски': ['Актуальные', 'Готово', 'План', 'Актуальные', 'Готово', 'План', 'Актуальные', 'Готово', 'План']
-        #     'City': ['SF', 'SF', 'SF', 'Montreal', 'Montreal', 'Montreal']
-        # })
-        # fig = px.bar(df, x='Месяц', y='Количество', color='City', barmode='group')
-        'Fruit': ['qweqwe', 'Oranges', 'Апрель', 'Apples', 'Oranges',
-                  'Bananas'],
-        'Amount': [4, 1, 2, 2, 4, 5],
-        'City': ['SF', 'SF', 'SF', 'Montreal', 'Montreal', 'Montreal']
+    form = StatisticFilter()
+    user_id = request.args.get('user')
+    users = Users.query.order_by(Users.name).all()
+    year = datetime.date.today().year
+    period = request.args.get('period')
 
-    })
-    fig = px.bar(df, x='Fruit', y='Amount', color='City',
-                 barmode='group')
-    # fig = px.bar(df, x='Месяц', y='Количество', color='Доски', barmode='group')
-    graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-    print(graphJSON)
-    return render_template('statistic/index.html', counter=counter, graphJSON=graphJSON)
+    periods = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь',
+               'декабрь']
+    periods = list(zip(range(1, 13), periods))
+    form.user.choices = [('all', 'По всем')] + [(user.id, user.name) for user in users]
+    form.period.choices = [('current_year', 'Текущий год')] + list(periods)
 
-# @bp.route("/plot")
-# def hello():
-#     # Generate the figure **without using pyplot**.
-#     df = pd.DataFrame({
-#         'Fruit': ['Apples', 'Oranges', 'Bananas', 'Apples', 'Oranges',
-#                   'Bananas'],
-#         'Amount': [4, 1, 2, 2, 4, 5],
-#         'City': ['Казань', 'Казань', 'Казань', 'Нижний', 'Нижний', 'Нижний']
-#     })
-#     fig = px.bar(df, x='Fruit', y='Amount', color='City',
-#                  barmode='group')
-#     graphJSON = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
-#     return f"<img src='data:image/png;base64,{data}'/>"
+    normal_tasks = db.session.query(Task.user_id, db.func.count().label('normal')) \
+        .filter(extract('year', Task.completed) == year,
+                Task.completed < Task.deadline).group_by(Task.user_id)
+
+    tasks = db.session.query(Task.user_id, Users.name, db.func.count().label('tasks')) \
+        .filter(extract('year', Task.completed) == year) \
+        .join(Users).group_by(Task.user_id, Users.name).order_by(Users.name)
+
+    if user_id and user_id != 'all':
+        user = Users.query.get_or_404(user_id)
+        normal_tasks = normal_tasks.filter(Task.user_id == user.id)
+        tasks = tasks.filter(Task.user_id == user.id)
+    if period != 'current_year':
+        normal_tasks = normal_tasks.filter(extract('month', Task.completed) == period)
+        tasks = tasks.filter(extract('month', Task.completed) == period)
+        # SQL запрос
+        # select name,  count(tasks.id), ( select count(*) from tasks where user_id  = 106 and
+        # extract(year from completed) = 2023 and extract(month from completed) = 2 and completed < deadline)
+        # as normal, ( select count(*) from tasks where user_id  = 106 and extract(year from completed) = 2023
+        # and extract(month from completed) = 2 and completed >= deadline) as overdue from tasks join
+        # users u on u.id = tasks.user_id where u.id  = 106 and extract(year from completed) = 2023 and
+        # extract(month from completed) = 2 group by name;
+
+    tasks_by_months = db.session.query(extract('month', Task.completed).label('month'), Users.name,
+                                       db.func.count(Task.id).label('tasks')). \
+        filter(extract('year', Task.completed) == year).join(Users).group_by(literal_column('month'), Users.name)
+
+    df_tasks = pd.read_sql_query(tasks.statement, current_app.config.get('SQLALCHEMY_DATABASE_URI'),
+                                 index_col='user_id')
+    df_normal = pd.read_sql_query(normal_tasks.statement, current_app.config.get('SQLALCHEMY_DATABASE_URI'),
+                                  index_col='user_id')
+    df_tasks = df_tasks.join(df_normal)
+    fig = go.Figure()
+    fig.add_trace(go.Bar(
+        x=df_tasks['name'],
+        y=df_tasks['tasks'],
+        name='Выполнено задач',
+        textposition="inside",
+        texttemplate="%{y}",
+        textfont_color="white",
+        marker_color='indianred'
+    ))
+    fig.add_trace(go.Bar(
+        x=df_tasks['name'],
+        y=df_tasks['normal'],
+        name='Задачи выполенные в срок',
+        marker_color='green',
+        texttemplate="%{y}",
+        textposition="inside",
+        textangle=0,
+        textfont_color="white",
+    ))
+    fig.update_layout(
+        title=go.layout.Title(
+            text="Диаграмма выполенные задачи<br><sup>Дополнительно - задачи выполенные в срок</sup>",
+            xref="paper",
+            x=0
+        ),
+        xaxis=go.layout.XAxis(
+            title=go.layout.xaxis.Title(
+                text=f"Разработчики<br><sup>{period}</sup>"
+            )
+        ),
+        yaxis=go.layout.YAxis(
+            title=go.layout.yaxis.Title(
+                text="Задачи <br><sup>Количество задач за выбранный период</sup>"
+            )
+        ),
+
+    )
+    df = pd.read_sql_query(tasks_by_months.statement, current_app.config.get('SQLALCHEMY_DATABASE_URI'))
+    diagrams = json.dumps(fig, cls=plotly.utils.PlotlyJSONEncoder)
+
+    fig_ = px.bar(df, x='month', y='tasks', color='name', title="Сводная по месячно по каждому разработчику<br>"
+                                                                "<sup>Католичество задач за выбранный период</sup>",
+                  text_auto=True, barmode='group')
+    diagrams_by_months = json.dumps(fig_, cls=plotly.utils.PlotlyJSONEncoder)
+    return render_template('statistic/index.html', counter=counter, diagrams=diagrams,
+                           diagrams_by_months=diagrams_by_months, form=form)

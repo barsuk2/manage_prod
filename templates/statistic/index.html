@@ -18,9 +18,42 @@
 
     {# Список задач #}
     <div class="col-6">
-        <h1>Статистика</h1>
-        <div id='chart' class='chart w-50'></div>
-    </div>
+        <h1>Статистика сервиса</h1>
+{#    {% include 'statistic/nav_statistics.html' %}#}
+    <form class="table-filters">
+        <div class="row justify-content-between ">
+            <div class="col-lg-auto">
+                <div class="row justify-content-start">
+                    <div class="col-lg-auto mb-1 mb-lg-0">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Выбрать период</span>
+                            {{ form.period(class='form-select') }}
+                        </div>
+                    </div>
+                    <div class="col-lg-auto mb-1 mb-lg-0">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Выбрать юзера</span>
+                            {{ form.user(class='form-select') }}
+
+                        </div>
+                    </div>
+                    <div class="col-lg-auto mb-1 mb-lg-0">
+                        <div class="input-group input-group-sm">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg text-lg-end">
+                <button type="submit" class="btn btn-sm btn-primary">Показать</button>
+            </div>
+        </div>
+</form>
+
+
+    <div class="row">
+        <div class="col-12 border mb-3"><div id='chart1' class='chart1'></div></div>
+        <div class="col-12 border mb-3"><div id='chart2' class='chart2'></div></div>
     {# Описание задачи #}
     <div class="col-4">
     </div>
@@ -31,22 +64,13 @@
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
     <script>
-        var graphs = '{{graphJSON | safe}}';
-        chart = document.getElementById('chart');
+        var graphs = '{{ diagrams | safe}}', diagrams = '{{ diagrams_by_months | safe}}';
+        chart1 = document.getElementById('chart1');
+        chart2 = document.getElementById('chart2');
         graphs = JSON.parse(graphs)
-        var data = [
-            {
-                x: ['giraffes', 'orangutans', 'monkeys'],
-                y: [20, 14, 23],
-                type: 'bar',
-                d: 'asda'
-            }
-        ]
-        console.log(graphs)
-        console.log(data)
-
-        Plotly.plot(chart, graphs);
-        {#Plotly.newPlot('chart',, {});#}
+        diagrams = JSON.parse(diagrams)
+        Plotly.plot(chart1, graphs);
+        Plotly.plot(chart2, diagrams);
     </script>
 {% endblock script %}
 
