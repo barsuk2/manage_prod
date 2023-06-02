@@ -7,34 +7,34 @@
 {% block body %}
     <div class="row">
     {# Меню#}
-    {% include 'menu_admin.html' %}
+    {% include 'menu.html' %}
 
     {# Список задач #}
     <div class="col-6">
-        <h1>Юзеры
+        <h3 class="mb-3">Юзеры
         <div class="float-end">
-        <a class="btn btn-success text-end" id='add_task' href="{{ url_for('.user_edit') }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> Добавить юзера</a>
+        <a class="btn btn-primary text-end" id='add_task' href="{{ url_for('.user_edit') }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> Добавить юзера</a>
         </div>
-        </h1>
+        </h3>
         <table class="table table-borderless">
             <thead class="table-light">
             <tr>
                 <th class="col-auto border-start">#</th>
-                <th class="col-auto border-start">id</th>
+                <th class="col-auto border-start d-none">id</th>
                 <th class="col border-start">Имя</th>
                 <th class="col border-start">Email</th>
-                <th class="col border-start">Роли</th>
+                <th class="col-1 border-start">Роли</th>
             </tr>
             </thead>
             {% for user in users %}
 
                 <tr class="{{ active }}" id="task" style="--bs-bg-opacity: .1;">
                     <td class="col-auto" id="id">{{ loop.index }}</td>
-                    <td class="border-start" id="task_id">{{ user.id }}</td>
+                    <td class="border-start d-none" id="task_id">{{ user.id }}</td>
                     <td class="border-start"><a href="{{ url_for('.user_profile', user_id=user.id) }}">{{ user.name }}</a>
                     </td>
                     <td class="border-start fs-6">{{ user.email }}</td>
-                    <td class="border-start">{{ user.roles }}</td>
+                    <td class="border-start text-nowrap ">{{ user.role.roles }}</td>
                 </tr>
             {% endfor %}
         </table>

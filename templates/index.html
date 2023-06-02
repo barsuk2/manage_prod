@@ -11,7 +11,6 @@
 {% else %}
 {% set qs = {'user_id': user_id, 'task_id': task_id, 'filter': filter} %}
 {% endif %}
-{#{% set qs = qs.update(filter) %}#}
 
 
 
@@ -22,8 +21,12 @@
 
     {# Список задач #}
     <div class="col-6">
-    <h1>Доски</h1>
+
+    {% if user_id ==0 %}
+    <h3>Доски</h3>
         {% include 'nav.html' %}
+    {% endif %}
+
         <h1>{{ 'Список задач' if not user else 'Мои задачи'}} </h1>
         <table class="table table-borderless">
             <thead class="table-light">
@@ -49,12 +52,12 @@
                 <tr class="{{ active }}" id="task" style="--bs-bg-opacity: .1;">
                     <td class="col-auto" id="id">{{ loop.index }}</td>
                     <td class="border-start d-none" id="task_id">{{ task.id }}</td>
+{#                    todo что за хуня#}
                     {% if user_id == 0 %}
                     {% set qs = {'board_id': page, 'task_id': task.id, 'filter': filter} %}
                     {% else %}
                     {% set qs = {'user_id': user_id, 'task_id': task.id, 'filter': filter} %}
                     {% endif %}
-
                     <td class="border-start d-flex justify-content-between align-items-start"><a href="{{ url_for('.index', **qs) }}">
                             {{ task.title }} </a><span class="badge bg-secondary rounded-pill" title="количество комментов">{{ task.comments|len_list or '' }}</span>
                     </td>
@@ -74,12 +77,11 @@
     {# Описание задачи #}
 
     <div class="col-4" >
-
-        <span class="invisible">Задача</span>
+        <h3 class="invisible">Задача</h3>
         <div class="float-end">
-        {% if page != 'Complete' %}
-        <a class="btn btn-success text-end" id='add_task' href="{{ url_for('.index', board_id=page, create_task=1) }}"><i class="fa fa-plus-circle" aria-hidden="true"></i>Добавить задачу</a>
-        {% endif %}
+{#        {% if page != 'Complete' and user_id == 0 %}#}
+{#        <a class="btn btn-success text-end" id='add_task' href="{{ url_for('.index',create_task=1 ) }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> Добавить задачу</a>#}
+{#        {% endif %}#}
         </div>
         </h1>
         {%  if task_id != 0 or create_task%}
@@ -94,7 +96,6 @@
                 <a class="nav-link" href="#" id="history">История</a>
             </li>
             <li>
-
         </ul>
         <form class="" id="task_desc" action="{{ url_for('.index', **qs) }}" method="post">
             {{ form.csrf_token() }}
@@ -126,7 +127,7 @@
                 <div class="row">
                     <div class="col">
                         <label class="control-label" for="user_id">Теги</label>
-                        {{ form.tags(class="form-control mb-3") }}
+                        {{ form.tags(class="form-control mb-3 ", placeholder="хрен собачий или хрен, собачий") }}
                     </div>
                     <div class="col">
                         <label class="control-label" for="board">Доска</label>
@@ -156,7 +157,7 @@
 
                             <input type="radio" class="btn-check" name="stage" id="Done" autocomplete="off"
                                    value="Done">
-                            <label class="btn btn-outline-success" for="Done">Готов</label>
+                            <label class="btn btn-outline-success" for="Done">Готово</label>
                         </div>
                         <span class="text-muted my-2">Не забывай выставлять нужный этап для задачи</span>
                     <div class="row my-2">
@@ -228,10 +229,16 @@
     <script>
         $(function () {
             let $task = $('tr#task'), $block_task_manage = $('.task.manage'), $block_task_history = $('.task.history'),
-                $block_task_comment = $('.task.comment'), board = '{{ page }}';
+                $block_task_comment = $('.task.comment'), board = '{{ page }}', createtask = '{{ create_task }}' ;
             $block_task_comment.hide()
             $block_task_history.hide()
             $block_task_manage.show()
+
+            if (createtask === '1') {
+                console.log(createtask)
+                $('#comment').addClass('invisible')
+                $('#history').addClass('invisible')
+            }
 
 
 

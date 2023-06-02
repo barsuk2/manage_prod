@@ -1,9 +1,9 @@
 import hashlib
+import json
 from collections import OrderedDict
 
 from flask import current_app
 from flask_login import UserMixin
-from werkzeug.security import generate_password_hash, check_password_hash
 
 from core import db, login_manager
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
@@ -23,6 +23,12 @@ class Users(db.Model, UserMixin):
     deleted = db.Column(db.DateTime(timezone=True))  # Время, когда юзер самоубился
     task = db.relationship('Task', backref='user')
     history = db.relationship('History', backref='user')
+    role = db.relationship('Roles', backref='user', uselist=False)
+
+    def has_role(self, role) -> True:
+        if role not in self.role.roles:
+            return False
+        return True
 
     @staticmethod
     def hash_password(data):
@@ -42,6 +48,14 @@ class Users(db.Model, UserMixin):
     @property
     def is_anonymous(self):
         return not self.is_authenticated
+
+    def add_roles(self, roles: list):
+        roles_user = Roles.query.filter(Roles.user_id == self.id).first()
+        if not roles_user:
+            db.session.add(Roles(user_id=self.id, roles=roles))
+        else:
+            roles_user.roles = roles
+        db.session.commit()
 
 
 @login_manager.user_loader
@@ -115,7 +129,7 @@ class History(db.Model):
     __tablename__ = 'history'
 
     id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('tasks.id', ondelete='SET NULL', onupdate='CASCADE'))
+    task_id = db.Column(db.Integer)
     stage = db.Column(db.Enum(*Task.STAGE, name='stage'), nullable=True)
     title = db.Column(db.String)
     task_status = db.Column(db.Enum(*Task.STATUS, name='task_status'), nullable=True)
@@ -127,9 +141,12 @@ class History(db.Model):
 class Roles(db.Model):
     __tablename__ = 'roles'
 
-    ROLES = ('super')
+    ROLES = ('super', 'admin', 'pm', 'qa', 'user_middle', 'user_junior')
 
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE', onupdate='CASCADE'),
                         primary_key=True)
     created = db.Column(db.DateTime(timezone=True), server_default=db.text('now()'), nullable=False)
     roles = db.Column(ARRAY(db.String(32), zero_indexes=True))
+
+    def get_roles(self):
+        return json.dumps(self.roles)

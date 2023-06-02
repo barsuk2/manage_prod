@@ -13,7 +13,7 @@ from flask import redirect, url_for, flash, render_template, abort, request, jso
 
 from . import bp
 from core import db
-from models import Task, Users, History
+from models import Task, Users, History, Roles
 from manage.forms import TaskFormEdit, LoginForm, UserForm, StatisticFilter
 
 
@@ -29,27 +29,12 @@ def counter_tasks(tasks=None):
     return counter
 
 
-def loging_stage_task(task, task_id, before_task=None):
+def loging_stage_task(task):
     """ Добавляет в таблицу History движение задачи - """
-    qs = {}
-    if task.id != task_id:
-        qs = {'task_status': 'Created', 'title': task.title}
-    # Добавляем новый
-    elif task.stage != before_task['stage']:
-        qs = {'task_status': 'Job'}
-    elif task.board == 'Complete':
-        qs = {'task_status': 'Complete'}
-
-    task_history = History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id, **qs)
+    task_history = History(task_id=task.id, title=task.title, stage=task.stage, task_status=task.task_status,
+                           board=task.board, user_id=current_user.id, )
     db.session.add(task_history)
     db.session.commit()
-
-
-@bp.route("/logout/")
-@login_required
-def logout():
-    logout_user()
-    return redirect(url_for('.index'))
 
 
 @bp.route('/', methods=('POST', 'GET'))
@@ -72,7 +57,6 @@ def index(board_id=None, task_id=None, user_id=None):
             .order_by(History.created.desc()).all()
     else:
         task = Task()
-    before_task = task.__dict__
     form = TaskFormEdit(obj=task)
     users = Users.query.all()
     form.user_id.choices = [(0, '')] + [(user.id, user.name) for user in users]
@@ -93,7 +77,7 @@ def index(board_id=None, task_id=None, user_id=None):
     if filter and filter == 'importance':
         q = actual.filter(Task.importance.in_(('high', 'medium')))
     if filter and filter == 'new':
-        q = actual.filter(datetime.now() - Task.created <= timedelta(days=1))
+        q = actual.filter(datetime.datetime.now() - Task.created <= datetime.timedelta(days=1))
     tasks = q.order_by(Task.created.desc())
 
     if request.method == 'POST':
@@ -104,6 +88,8 @@ def index(board_id=None, task_id=None, user_id=None):
             form.board.data = board_id
         if form.importance.data == '':
             form.importance.data = None
+        if not task_id:
+            task.task_status = 'Created'
         if task.comments:
             comments = task.comments.copy()
             comments = [i for i in comments if i != '']
@@ -119,13 +105,46 @@ def index(board_id=None, task_id=None, user_id=None):
         query_string.update({'filter': filter})
         if task.stage == 'Done':
             task.board = 'Complete'
+            task.completed = datetime.datetime.now()
         db.session.add(task)
         db.session.commit()
-        loging_stage_task(task, task_id, before_task)
+        loging_stage_task(task)
 
         return redirect(url_for('.index', **query_string))
     return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter,
                            history_task=history_task, user=user, filter=filter, create_task=create_task)
+
+
+@bp.route('/task/deleted/<board_id>/<int:task_id>', methods=('POST',))
+@bp.route('/task/deleted/<int:user_id>/<int:task_id>', methods=('POST',))
+@login_required
+def del_task(task_id, user_id=None, board_id=None):
+    task = Task.query.get_or_404(task_id)
+    db.session.delete(task)
+    db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id,
+                           task_status='Deleted'))
+    db.session.commit()
+    if user_id:
+        qs = {'user_id': user_id}
+    else:
+        qs = {'board_id': board_id}
+    return redirect(url_for('.index', **qs))
+
+
+@bp.route("/logout/")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('.index'))
+
+
+@bp.post('/users/delete/<int:user_id>')
+@login_required
+def del_user(user_id):
+    user = Users.query.get_or_404(user_id)
+    db.session.delete(user)
+    db.session.commit()
+    return redirect(url_for('.get_users'))
 
 
 @bp.route('/login/', methods=['GET', 'POST'])
@@ -145,49 +164,27 @@ def login():
     return render_template('login.html', form=form)
 
 
-@bp.route('/delete_task/<board_id>/<int:task_id>', methods=('POST',))
-@bp.route('/delete_task/<int:user_id>/<int:task_id>', methods=('POST',))
+@bp.route('/users/profile/<int:user_id>')
 @login_required
-def del_task(task_id, user_id=None, board_id=None):
-    task = Task.query.get_or_404(task_id)
-    db.session.delete(task)
-    db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id,
-                           task_status='Deleted'))
-    db.session.commit()
-    if user_id:
-        qs = {'user_id': user_id}
-    else:
-        qs = {'board_id': board_id}
-    return redirect(url_for('.index', **qs))
+def user_profile(user_id):
+    counter = counter_tasks()
+    user = Users.query.get_or_404(user_id)
+    return render_template('users/profile_user.html', user=user, counter=counter)
 
 
 @bp.route('/users')
 @login_required
 def get_users():
+    counter = counter_tasks()
     users = Users.query.order_by(Users.name).all()
-    return render_template('users/users.html', users=users)
+    return render_template('users/users.html', users=users, counter=counter)
 
 
-@bp.post('/users/delete/<int:user_id>')
-@login_required
-def del_user(user_id):
-    user = Users.query.get_or_404(user_id)
-    db.session.delete(user)
-    db.session.commit()
-    return redirect(url_for('.get_users'))
-
-
-@bp.route('/users/profole/<int:user_id>')
-@login_required
-def user_profile(user_id):
-    user = Users.query.get_or_404(user_id)
-    return render_template('users/profile_user.html', user=user)
-
-
-@bp.route('/users/user/<int:user_id>', methods=('POST', 'GET'))
-@bp.route('/users/user/new', methods=('POST', 'GET'))
+@bp.route('/users/edit/<int:user_id>', methods=('POST', 'GET'))
+@bp.route('/users/new', methods=('POST', 'GET'))
 @login_required
 def user_edit(user_id=None):
+    counter = counter_tasks()
     if user_id:
         user = Users.query.get_or_404(user_id)
     else:
@@ -199,11 +196,14 @@ def user_edit(user_id=None):
                 form.password.data = user.set_password(form.password.data)
             form.populate_obj(user)
             db.session.add(user)
-            db.session.commit()
+            db.session.flush()
+            user.add_roles(request.form.getlist('roles'))
+
             return redirect(url_for('.user_edit', user_id=user.id))
         else:
             flash(form.errors, 'danger')
-    return render_template('users/edit_user.html', user=user, form=form)
+    roles = Roles.ROLES
+    return render_template('users/edit_user.html', user=user, form=form, roles=roles, counter=counter)
 
 
 @bp.get('/user/generate_pass')
