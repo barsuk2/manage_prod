@@ -2,6 +2,13 @@
 {% set page = request.view_args.get('board_id') or 'Actual' %}
 {% set task_id = request.view_args.get('task_id') or 0 %}
 {% set user_id = request.view_args.get('user_id') or 0 %}
+{% if user %}
+{% set qs = {'user_id': user_id, 'filter': filter} %}
+{% set endpoint = '.user_tasks' %}
+{% else %}
+{% set endpoint = '.index' %}
+{% set qs = {'board_id': page, 'filter': filter} %}
+{% endif %}
 
 
 {% block body %}

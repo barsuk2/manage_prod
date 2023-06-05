@@ -48,3 +48,7 @@ class UserForm(FlaskForm):
 class StatisticFilter(FlaskForm):
     user = SelectField(validators=[v.Optional()])
     period = SelectField(validators=[v.Optional()])
+
+
+class TaskFilter(FlaskForm):
+    search_word = StringField(validators=[v.Optional()])

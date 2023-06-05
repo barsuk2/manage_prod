@@ -1,20 +1,27 @@
 {% extends 'base.html' %}
-{% set page = request.view_args.get('board_id') or 'Actual' %}
+{% set board_id = request.view_args.get('board_id') or 'Actual' %}
 {% set task_id = request.view_args.get('task_id') or 0 %}
 {% set user_id = request.view_args.get('user_id') or 0 %}
 {% set new = request.view_args.get('new') or '' %}
+{% set filter = request.args.get('filter') or '' %}
 
-{% set qs = {'board_id': page} %}
-
-{% if user_id == 0 %}
-{% set qs = {'board_id': page, 'task_id': task_id} %}
+{% if user %}
+{% set qs = {'user_id': user_id, 'filter': filter} %}
+{% set endpoint = '.user_tasks' %}
 {% else %}
-{% set qs = {'user_id': user_id, 'task_id': task_id, 'filter': filter} %}
+{% set endpoint = '.index' %}
+{% set qs = {'board_id': board_id, 'filter': filter} %}
 {% endif %}
 
-
-
 {% block body %}
+
+{% if task_id != 0 %}
+        <form id="form-delete" class="form-inline" method="post"
+              action="{{  url_for('.del_task', task_id=task.id, **qs) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        </form>
+    {% endif %}
+
     <div class="row">
     {# Меню#}
     {% include 'menu.html' %}
@@ -26,8 +33,7 @@
     <h3>Доски</h3>
         {% include 'nav.html' %}
     {% endif %}
-
-        <h1>{{ 'Список задач' if not user else 'Мои задачи'}} </h1>
+        <h3>{{ 'Список задач' if not user else 'Мои задачи'}} </h3>
         <table class="table table-borderless">
             <thead class="table-light">
             <tr>
@@ -40,7 +46,7 @@
                 <th class="col border-start " title="Важность"><i
                         class="fa fa-exclamation-triangle fa-1x text-danger"></i></th>
                 <th class="col border-start">Этап</th>
-                {% if page == 'Complete' %}
+                {% if board_id == 'Complete' %}
                 <th class="col border-start">Готово</th>
                 {% endif %}
             </tr>
@@ -52,13 +58,7 @@
                 <tr class="{{ active }}" id="task" style="--bs-bg-opacity: .1;">
                     <td class="col-auto" id="id">{{ loop.index }}</td>
                     <td class="border-start d-none" id="task_id">{{ task.id }}</td>
-{#                    todo что за хуня#}
-                    {% if user_id == 0 %}
-                    {% set qs = {'board_id': page, 'task_id': task.id, 'filter': filter} %}
-                    {% else %}
-                    {% set qs = {'user_id': user_id, 'task_id': task.id, 'filter': filter} %}
-                    {% endif %}
-                    <td class="border-start d-flex justify-content-between align-items-start"><a href="{{ url_for('.index', **qs) }}">
+                    <td class="border-start d-flex justify-content-between align-items-start"><a href="{{ url_for(endpoint, task_id=task.id, **qs) }}">
                             {{ task.title }} </a><span class="badge bg-secondary rounded-pill" title="количество комментов">{{ task.comments|len_list or '' }}</span>
                     </td>
                     <td class="border-start fs-6">{{ task.tags or '' }}</td>
@@ -67,13 +67,15 @@
                     <td class="border-start text-primary">{{ task.estimate or '' }}</td>
                     <td class="border-start text-primary " id="importance">{{ importance(task.importance) }}</td>
                     <td class="border-start text-nowrap">{{ icon_stage(task.stage) }}</td>
-                    {% if page == 'Complete' %}
+                    {% if board_id == 'Complete' %}
                 <td class="border-start text-nowrap">{{ task.completed.strftime('%d-%m-%Y') if task.completed }}</td>
                 {% endif %}
                 </tr>
             {% endfor %}
         </table>
+        {{ render_pagination(tasks, endpoint, qs )}}
     </div>
+
     {# Описание задачи #}
 
     <div class="col-4" >
@@ -97,9 +99,9 @@
             </li>
             <li>
         </ul>
-        <form class="" id="task_desc" action="{{ url_for('.index', **qs) }}" method="post">
+        <form class="" id="task_desc" action="{{ url_for(endpoint, task_id=task.id, **qs) }}" method="post">
             {{ form.csrf_token() }}
-            <div class="task manage">
+            <div class="task manage mt-3 card card-body">
                 <label class="control-label" for="title">Заголовок</label>
                 {{ form.title(class="form-control mb-3") }}
                 <label class="control-label" for="description">Описание задачи</label>
@@ -171,7 +173,7 @@
                 {% endif %}
                 </div>
             </div>
-            <div class="task comment">
+            <div class="task comment mt-3 card card-body">
                 <ul class="list-group">
                     {% if task.comments %}
                         {% for comment in task.comments %}
@@ -187,12 +189,12 @@
                 <textarea rows="5" class="form-control" name="comment"></textarea>
         </form>
     </div>
-        <div class="task history">
+        <div class="task history mt-3 card card-body">
             <ul class="list-group list-group-flush w-75">
                 {% if history_task %}
                     {% for h in history_task %}
                         <li class="list-group-item d-flex justify-content-between">
-                        <dev>{{ loop.index }} - {{ h.created.strftime('%d-%m-%Y') }} <span class="text-primary">{{ h.user.name }}
+                        <dev>{{ loop.index }} - {{ h.created.strftime("%d-%m-%Y") }} <span class="text-primary">{{ h.user.name }}
                         </span>установил(а) статус-
                         <span class="badge bg-info rounded-pill">{{ h.stage if h.stage else h.task_status }}</span> </dev>
                     {% endfor %}
@@ -201,8 +203,7 @@
             </ul>
         </div>
     </div>
-    <form method="post" action="{{ url_for('.del_task', **qs) }} ">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <form method="post" action="">
             <div class="modal" id="modal-delete">
                 <div class="modal-dialog">
                     <div class="modal-content">
@@ -214,7 +215,7 @@
                             Задача будет удалена на совсем. Запись появится в таблице 'history'
                         </div>
                         <div class="modal-footer">
-                            <button type="submit" class="btn btn-danger">Удалить</button>
+                            <button type="submit" id='btn-delete' class="btn btn-danger">Удалить</button>
                             <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
                         </div>
                     </div>
@@ -229,7 +230,7 @@
     <script>
         $(function () {
             let $task = $('tr#task'), $block_task_manage = $('.task.manage'), $block_task_history = $('.task.history'),
-                $block_task_comment = $('.task.comment'), board = '{{ page }}', createtask = '{{ create_task }}' ;
+                $block_task_comment = $('.task.comment'), board = '{{ board_id }}', createtask = '{{ create_task }}' ;
             $block_task_comment.hide()
             $block_task_history.hide()
             $block_task_manage.show()
@@ -284,6 +285,10 @@
                 })
 
             });
+        });
+        $("#btn-delete").on("click", function (e) {
+            e.preventDefault();
+            $("#form-delete").submit();
         });
     </script>
 {% endblock script %}

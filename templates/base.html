@@ -16,13 +16,13 @@
     border-top: 1px dashed #bbb;
     border-bottom: 1px dashed #bbb;
 }
-{#a {
+a {
     text-decoration: none;
 }
 a:hover{
   text-decoration: underline;
   color: #337ab7;
-}#}
+}
 
 {#@font-face {
   font-family: 'Roboto Condensed';
@@ -55,10 +55,17 @@ a:hover{
 {% else %}
 {% set class_ = 'invisible' %}
 {% endif %}
+
+
 <span class="fa-stack fa-1x {{ class_ }}" title="{{ title }}">
     <i class="fa fa-square-o  fa-stack-2x"></i>
     <i class="fa fa-play  fa-stack-1x"></i>
 </span>
+{% endmacro %}
+
+{% macro bg_menu(request) %}
+    filter = request.args.get('filter')
+
 {% endmacro %}
 
 
@@ -82,7 +89,24 @@ a:hover{
 <i class="fa {{ size }} {{ class_ }} " aria-hidden="false" title="{{ title }}"></i>
 
 {% endmacro %}
-
+{% macro render_pagination(pagination, endpoint, qs) %}
+  <div class=page-items>
+{#    {{ pagination.first }} - {{ pagination.last }} of {{ pagination.total }}#}
+  </div>
+  <ul class=pagination>
+    {% for page in pagination.iter_pages() %}
+      {% if page %}
+        {% if page != pagination.page %}
+          <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, page=page, **qs) }}">{{ page }}</a></li>
+        {% else %}
+            <li class="page-item active"><a class="page-link">{{ page }}</a></li>
+        {% endif %}
+      {% else %}
+        <span class="ellipsis">...</span>
+      {% endif %}
+    {% endfor %}
+  </ul>
+{% endmacro %}
 <div class="container-fluid">
     <div class="row bg-dark justify-content-between mb-4">
         <div class="col">
