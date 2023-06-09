@@ -17,9 +17,12 @@
 
             </li>
         </ul>
+        <div>
+        <a id='search_task' class="btn btn-secondary text-end" href="#">Искать задачу</a>
+
         {% if page != 'Complete' and user_id == 0 %}
         <a class="btn btn-success text-end" id='add_task' href="{{ url_for('.index',create_task=1 ) }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> Добавить задачу</a>
-        {% endif %}
+        {% endif %}</div>
 {#        <a class="btn btn-primary" id='add_task' href="{{ url_for('.index',board_id=page, create_task=True) }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> Добавить доску</a>#}
     </div>
 </nav>

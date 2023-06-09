@@ -34,6 +34,25 @@
         {% include 'nav.html' %}
     {% endif %}
         <h3>{{ 'Список задач' if not user else 'Мои задачи'}} </h3>
+
+    <form class="table-filters search_task">
+        <div class="row justify-content-between ">
+            <div class="col-lg-auto">
+                <div class="row justify-content-start">
+                    <div class="col-lg-auto mb-1 mb-lg-0">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">Искать</span>
+                            {{ search_task_form.search_word(class='form-control') }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg text-lg-end">
+                <button type="submit" class="btn btn-sm btn-primary">Показать</button>
+                <a href="{{ url_for(endpoint, **qs) }}" class="btn btn-sm btn-primary">Сбросить</a>
+            </div>
+        </div>
+</form>
         <table class="table table-borderless">
             <thead class="table-light">
             <tr>
@@ -73,7 +92,10 @@
                 </tr>
             {% endfor %}
         </table>
+        {% if tasks.total >= tasks.per_page %}
         {{ render_pagination(tasks, endpoint, qs )}}
+        {% endif %}
+
     </div>
 
     {# Описание задачи #}
@@ -231,6 +253,8 @@
         $(function () {
             let $task = $('tr#task'), $block_task_manage = $('.task.manage'), $block_task_history = $('.task.history'),
                 $block_task_comment = $('.task.comment'), board = '{{ board_id }}', createtask = '{{ create_task }}' ;
+
+
             $block_task_comment.hide()
             $block_task_history.hide()
             $block_task_manage.show()
@@ -251,6 +275,7 @@
                     $(this).find('#id').addClass('border-start border-5 border-success')
                 }
             });
+
             // подсветить доску
             $(`#${board}`).addClass('active')
 
@@ -290,5 +315,12 @@
             e.preventDefault();
             $("#form-delete").submit();
         });
+        $('form.search_task').hide()
+        $('a#search_task').show()
+        $('#hide_search_task').hide()
+        $('#search_task').on("click", function(a) {
+          // скрывает панель "Искать задачу"
+        $('form.search_task').toggle()
+        })
     </script>
 {% endblock script %}
