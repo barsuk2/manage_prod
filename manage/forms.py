@@ -3,7 +3,7 @@ import datetime
 from flask_wtf import FlaskForm
 from sqlalchemy import extract
 from wtforms import TextAreaField, StringField, SelectField, DateField, FloatField, DecimalField, EmailField, \
-    BooleanField, PasswordField, RadioField
+    BooleanField, PasswordField, RadioField, SelectMultipleField
 
 from flask import current_app
 from core import db
@@ -52,3 +52,14 @@ class StatisticFilter(FlaskForm):
 
 class TaskFilter(FlaskForm):
     search_word = StringField(validators=[v.Optional()])
+
+
+class CardForm(FlaskForm):
+    category = StringField(validators=[v.Optional()])
+    subcategory = StringField(validators=[v.Optional()])
+    questions = StringField(validators=[v.Optional()])
+    response = TextAreaField(validators=[v.Optional()])
+
+
+class ViewCardForm(FlaskForm):
+    category = SelectMultipleField(validators=[v.Optional()])

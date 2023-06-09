@@ -1,4 +1,5 @@
 import json
+import random
 import string
 import secrets
 
@@ -13,8 +14,8 @@ from flask import redirect, url_for, flash, render_template, abort, request, jso
 
 from . import bp
 from core import db
-from models import Task, Users, History, Roles
-from manage.forms import TaskFormEdit, LoginForm, UserForm, StatisticFilter, TaskFilter
+from models import Task, Users, History, Roles, Card
+from manage.forms import TaskFormEdit, LoginForm, UserForm, StatisticFilter, TaskFilter, CardForm, ViewCardForm
 
 
 def counter_tasks(tasks=None):
@@ -141,6 +142,9 @@ def user_tasks(user_id, task_id=None):
         task = Task.query.get_or_404(task_id)
     else:
         task = Task()
+    search_word = request.args.get('search_word')
+    if search_word:
+        tasks = search_task(tasks, search_word)
     tasks = tasks.paginate(per_page=20, error_out=False)
     form = TaskFormEdit(obj=task)
     users = Users.query.all()
@@ -373,3 +377,57 @@ def get_statistic_task():
     diagrams_by_months = json.dumps(fig_, cls=plotly.utils.PlotlyJSONEncoder)
     return render_template('statistic/index.html', counter=counter, diagrams=diagrams,
                            diagrams_by_months=diagrams_by_months, form=form)
+
+
+@bp.route('/cards', methods=('POST', 'GET'))
+@bp.route('/cards/<int:card_id>', methods=('POST', 'GET'))
+# @bp.route('/cards/new', methods=('POST', 'GET'))
+@login_required
+def cards_get(card_id=None):
+    cards = Card.query.all()
+    return render_template('cards/index.html', cards=cards)
+
+
+@bp.route('/cards/new', methods=('POST', 'GET'))
+@bp.route('/cards/<int:card_id>/edit', methods=('POST', 'GET'))
+# @bp.route('/cards/new', methods=('POST', 'GET'))
+@login_required
+def card_edit(card_id=None):
+    cards = Card.query
+    if card_id:
+        card = Card.query.get_or_404(card_id)
+    else:
+        card = Card()
+    form = CardForm(obj=card)
+
+    if request.method == 'POST':
+        form.populate_obj(card)
+        db.session.add(card)
+        db.session.commit()
+        return redirect(url_for('.cards_get'))
+    return render_template('cards/edit_card.html', cards=cards, form=form)
+
+
+@bp.route('/cards/view')
+@login_required
+def card_view():
+    # categories = request.args.getlist('category')
+    q = Card.query
+    # if categories:
+    #     for elem in categories:
+    #         q = q.filter(Card.category == elem)
+    # form = ViewCardForm()
+    cards = Card.query.order_by(Card.response)
+    cards = cards.paginate(per_page=1, error_out=False)
+    # category = [cat.category for cat in cards]
+    # form.category.choices = list(set(category))
+    return render_template('cards/view_card.html', cards=cards)
+
+
+@bp.route('/cards/<int:card_id>/delete', methods=('POST', 'GET'))
+@login_required
+def card_del(card_id=None):
+    card = Card.query.get_or_404(card_id)
+    db.session.delete(card)
+    db.session.commit()
+    return redirect(url_for('.cards_get'))

@@ -150,3 +150,12 @@ class Roles(db.Model):
 
     def get_roles(self):
         return json.dumps(self.roles)
+
+
+class Card(db.Model):
+    __tablename__ = 'cards'
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column('category', db.String)
+    subcategory = db.Column('subcategory', db.String)
+    questions = db.Column('questions', db.String)
+    response = db.Column('response', db.String)

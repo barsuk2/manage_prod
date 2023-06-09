@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <div class="row justify-content-center">
+<div class="col-8 card flex justify-content-between">
+    <a href="{{ url_for('.cards_get') }}"> <- вернуться</a>
+    <h2 >Редактировать задачу</h2>
+
+    <form class="card-body" action="{{ url_for('.card_edit') }}" method="post">
+        {{ form.csrf_token() }}
+        {{ form.category.label(class="label-control") }}
+        {{ form.category(class="form-control") }}
+         {{ form.subcategory.label(class="label-control") }}
+        {{ form.subcategory(class="form-control") }}
+        {{ form.questions.label(class="label-control") }}
+        {{ form.questions(class="form-control") }}
+        {{ form.response.label(class="label-control") }}
+        {{ form.response(class="form-control") }}
+
+        <button class="btn btn-info mt-3" type="submit">Добавить задачу</button>
+        <a class="btn btn-outline-danger mt-3" href="{{ url_for('.card_del', card_id = request.view_args.get('card_id')) }}">Удалить</a>
+    </form>
+</div>
+</div>
+{% endblock body %}
+{% block script %}
+    <script>
+        $(function () {
+        });
+        </script>
+{% endblock script %}
