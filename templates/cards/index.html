@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <form action="{{ url_for(".card_edit") }}" method="post"></form>
+
+    <div class="row justify-content-center">
+        <div class="col-8 card">
+        <h3 class="card-body">Вопросы к собеседованию  <div class="float-end"><a href="{{ url_for(".card_edit") }}" class="btn btn-outline-info me-3">Добавить задачу</a> <a href="{{ url_for(".card_view") }}" class="btn btn-primary float-end">Режим карточек</a> </div></h3>
+            <table class="table">
+                <thead class="table-light">
+                <tr>
+                    <th class="col-auto border-start">#</th>
+                    <th class="col-auto border-start">Категория</th>
+                    <th class="col-auto border-start">Подраздел</th>
+                    <th class="col border-start">Вопрос</th>
+                    <th class="col border-start">Ответ</th>
+                </tr>
+                </thead>
+                {% for card in cards %}
+                    <tr class="{{ active }}" id="task" style="--bs-bg-opacity: .1;">
+                        <td class="col-auto" id="id">{{ loop.index }}</td>
+                        <td class="border-start" id="task_id"><a href="#">{{ card.category }}</a></td>
+                        <td class="border-start" id="task_id"><a href="#">{{ card.subcategory }}</a></td>
+                        <td class="border-start "><a
+                                href="{{ url_for('.card_edit', card_id=card.id) }}">{{ card.questions }}</td>
+                        <td class="border-start">{{ card.response }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
+
+        </div>
+    </div>
+{% endblock body %}
+{% block script %}
+    <script>
+        $(function () {
+        });
+    </script>
+{% endblock script %}
