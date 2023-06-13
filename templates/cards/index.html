@@ -14,6 +14,7 @@
                     <th class="col-auto border-start">Подраздел</th>
                     <th class="col border-start">Вопрос</th>
                     <th class="col border-start">Ответ</th>
+                    <th class="col border-start">Конспект</th>
                 </tr>
                 </thead>
                 {% for card in cards %}
@@ -24,6 +25,7 @@
                         <td class="border-start "><a
                                 href="{{ url_for('.card_edit', card_id=card.id) }}">{{ card.questions }}</td>
                         <td class="border-start">{{ card.response }}</td>
+                        <td class="border-start">{{ card.abstract }}</td>
                     </tr>
                 {% endfor %}
             </table>

@@ -41,24 +41,26 @@
                         <h5 class="response">{{ card.response }}</h5>
                     </dev>
                     <dev class="card-footer d-flex justify-content-between">
-                        Подсказки <span>asd as a asda</span>
+                        Подсказки <span>{{ card.abstract }}</span>
                     </dev>
 
                 </dev>
             </div>
 
         {% endfor %}
-    <div class="row justify-content-center">
-        <nav class="col-auto" aria-label="Page navigation example">
-                        <ul class=" mt-5 pagination">
-                            <li class="page-item"><a class="page-link" href="{{ url_for('.card_view', page = cards.prev_num) }}">Previous</a></li>
-                            <li class="page-item"><a class="page-link" href="{{ url_for('.card_view', page = cards.next_num) }}">Next</a></li>
-                        </ul>
-                    </nav>
-    </div>
-
-
+        <div class="row justify-content-center">
+            <nav class="col-auto" aria-label="Page navigation example">
+                <ul class=" mt-5 pagination">
+                    <li class="page-item"><a class="page-link"
+                                             href="{{ url_for('.card_view', page = cards.prev_num) }}">Previous</a></li>
+                    <li class="page-item"><a class="page-link"
+                                             href="{{ url_for('.card_view', page = cards.next_num) }}">Next</a></li>
+                </ul>
+            </nav>
         </div>
+
+
+    </div>
     </div>
 {% endblock body %}
 {% block script %}

@@ -59,6 +59,7 @@ class CardForm(FlaskForm):
     subcategory = StringField(validators=[v.Optional()])
     questions = StringField(validators=[v.Optional()])
     response = TextAreaField(validators=[v.Optional()])
+    abstract = StringField(validators=[v.Optional()])
 
 
 class ViewCardForm(FlaskForm):

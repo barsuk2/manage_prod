@@ -159,3 +159,4 @@ class Card(db.Model):
     subcategory = db.Column('subcategory', db.String)
     questions = db.Column('questions', db.String)
     response = db.Column('response', db.String)
+    abstract = db.Column('abstract', db.String)  # ключевые слова
