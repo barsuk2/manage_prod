@@ -25,8 +25,9 @@ class Users(db.Model, UserMixin):
     history = db.relationship('History', backref='user')
     role = db.relationship('Roles', backref='user', uselist=False)
 
-    def has_role(self, role) -> True:
-        if role not in self.role.roles:
+    def has_role(self, roles: str) -> True:
+        r_ = [True for role in roles.split(',') if role.strip() in self.role.roles]
+        if not any(r_):
             return False
         return True
 
@@ -141,7 +142,8 @@ class History(db.Model):
 class Roles(db.Model):
     __tablename__ = 'roles'
 
-    ROLES = ('super', 'admin', 'pm', 'qa', 'user_middle', 'user_junior')
+    # ROLES = ('super', 'admin', 'pm', 'qa', 'user_middle', 'user_junior')
+    ROLES = ('super', 'admin', 'user', 'card')
 
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE', onupdate='CASCADE'),
                         primary_key=True)

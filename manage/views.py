@@ -11,10 +11,11 @@ import pandas as pd
 from flask_login import login_required, login_user, logout_user, current_user
 from flask import redirect, url_for, flash, render_template, abort, request, jsonify, current_app
 
+from hooks import roles_required
 from . import bp
 from core import db
-from models import Task, Users, History, Roles
-from manage.forms import TaskFormEdit, LoginForm, UserForm, StatisticFilter, TaskFilter
+from models import Task, Users, History, Roles, Card
+from manage.forms import TaskFormEdit, LoginForm, UserForm, StatisticFilter, TaskFilter, CardForm
 
 
 def counter_tasks(tasks=None):
@@ -255,6 +256,7 @@ def get_users():
 
 @bp.route('/users/edit/<int:user_id>', methods=('POST', 'GET'))
 @bp.route('/users/new', methods=('POST', 'GET'))
+@roles_required('admin, super')
 @login_required
 def user_edit(user_id=None):
     counter = counter_tasks()
@@ -288,6 +290,7 @@ def generate_pass():
 
 
 @bp.get('/statistic/tasks')
+@roles_required('admin, super')
 def get_statistic_task():
     counter = counter_tasks()
     form = StatisticFilter()
@@ -302,7 +305,7 @@ def get_statistic_task():
     form.user.choices = [('all', 'По всем')] + [(user.id, user.name) for user in users]
     form.period.choices = [('current_year', 'Текущий год')] + list(periods)
 
-    normal_tasks = db.session.query(Task.user_id, db.func.count().label('normal')) \
+    rotten_tasks = db.session.query(Task.user_id, db.func.count().label('normal')) \
         .filter(extract('year', Task.completed) == year,
                 Task.completed < Task.deadline).group_by(Task.user_id)
 
@@ -385,8 +388,8 @@ def get_statistic_task():
 
 @bp.route('/cards', methods=('POST', 'GET'))
 @bp.route('/cards/<int:card_id>', methods=('POST', 'GET'))
-# @bp.route('/cards/new', methods=('POST', 'GET'))
 @login_required
+@roles_required('card')
 def cards_get(card_id=None):
     cards = Card.query.all()
     return render_template('cards/index.html', cards=cards)
@@ -394,7 +397,7 @@ def cards_get(card_id=None):
 
 @bp.route('/cards/new', methods=('POST', 'GET'))
 @bp.route('/cards/<int:card_id>/edit', methods=('POST', 'GET'))
-# @bp.route('/cards/new', methods=('POST', 'GET'))
+@roles_required('card')
 @login_required
 def card_edit(card_id=None):
     cards = Card.query
@@ -414,6 +417,7 @@ def card_edit(card_id=None):
 
 @bp.route('/cards/view')
 @login_required
+@roles_required('card')
 def card_view():
     # categories = request.args.getlist('category')
     q = Card.query
@@ -430,6 +434,7 @@ def card_view():
 
 @bp.route('/cards/<int:card_id>/delete', methods=('POST', 'GET'))
 @login_required
+@roles_required('card')
 def card_del(card_id=None):
     card = Card.query.get_or_404(card_id)
     db.session.delete(card)

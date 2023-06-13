@@ -1,26 +1,15 @@
-{#{% extends 'base.html' %}#}
+{% extends 'base.html' %}
 
-{% block content %}
-<h1>Вам сюда нельзя</h1>
+{% block body %}
+    <div class="row justify-content-center">
+        <div class="col-auto border border-2 border-danger">
+            <h1>403, Вам сюда нельзя</h1>
 
-<p>
-    К сожалению, у вас недостаточно прав, чтобы зайти на эту страницу.
+            <p>
+                К сожалению, у вас недостаточно прав, чтобы зайти на эту страницу.
 
-{#    {% with boss = current_user.team_member.department.boss %}#}
-{#        Если вы находите это несправедливым, попросите#}
-{#        {% if boss %}#}
-{#            руководителя вашего отдела,#}
-{#            <a href="{{ url_for('.team_profile', user_id=boss.id) }}">{{ boss.name }}</a>,#}
-{#            чтобы он#}
-{#        {% else %}#}
-{#            айтишников, чтобы они#}
-{#        {% endif %}#}
-{#    {% endwith %}#}
+            </p>
+        </div>
+    </div>
 
-    добавили вам доступ
-{#    {% for role in roles %}#}
-{#        «{{ ROLES.get(role, role) -}}»#}
-{#        {% if not loop.last %}, {% endif -%}#}
-{#    {% endfor %}.#}
-</p>
 {% endblock %}

@@ -66,7 +66,7 @@
 
 
             </ol>
-
+            {% if current_user.has_role('admin,super') %}
             <h2 class="mt-5">Admin</h2>
             <ul class="list-group list-group-flush">
                 <li class="list-group-item "><div class="d-flex justify-content-between">
@@ -76,8 +76,13 @@
                 </li>
                 <li class="list-group-item d-flex justify-content-between"><a href="{{ url_for('.get_users') }}">Юзеры и роли</a>
                     <i class="fa fs-4 fa-users text-info" aria-hidden="true"></i></li>
+                {% if current_user.has_role('card') %}
                 <li class="list-group-item "><a href="{{ url_for('.cards_get') }}">Cards</a>
+                {% endif %}
+
             </ul>
+                {% endif %}
+
 
 </div>
 
