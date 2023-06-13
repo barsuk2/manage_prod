@@ -71,7 +71,6 @@ def run_migrations_online():
         connection.close()
 
 
-print(context.config)
 if context.is_offline_mode():
     run_migrations_offline()
 else:

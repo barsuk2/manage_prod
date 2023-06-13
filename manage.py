@@ -19,7 +19,6 @@ class AddFakeTasks(Command):
     )
 
     def run(self, total_tags=0):
-        print()
         details = string.ascii_letters
         boards = list(Task.BOARDS.keys())
         users = Users.query.all()

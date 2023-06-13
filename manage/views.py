@@ -175,7 +175,6 @@ def loging_stage_task(task):
     params = dict(task_id=task.id, title=task.title, stage=task.stage, task_status=task.task_status,
                   board=task.board, user_id=task.user_id)
     history_task = History.query.filter(History.task_id == task.id).order_by(History.created.desc()).first()
-    print(params)
     if not history_task or history_task and (history_task.stage != task.stage or
                                              history_task.task_status != task.task_status or
                                              history_task.user_id != task.user_id or history_task.board != task.board):
