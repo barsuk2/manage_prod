@@ -138,12 +138,15 @@ def index(board_id='Actual', task_id=None, user_id=None):
 def user_tasks(user_id, task_id=None):
     user = Users.query.get_or_404(user_id)
     filter = request.args.get('filter')
+    history_task = ''
     tasks = Task.query.filter(Task.user_id == user.id, Task.board == 'Actual')
     counter = counter_tasks(tasks)
     tasks = task_filter(tasks, filter)
     search_task_form = TaskFilter()
     if task_id:
         task = Task.query.get_or_404(task_id)
+        history_task = History.query.options(db.joinedload(History.user)).filter(History.task_id == task.id) \
+            .order_by(History.created.desc()).all()
     else:
         task = Task()
     tasks = tasks.filter(Task.description != 'fake')
@@ -170,7 +173,7 @@ def user_tasks(user_id, task_id=None):
         loging_stage_task(task)
 
         return redirect(url_for('.user_tasks', **qs))
-    return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter,
+    return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter, history_task=history_task,
                            user=user, filter=filter, search_task_form=search_task_form)
 
 

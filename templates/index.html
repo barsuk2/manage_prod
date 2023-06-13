@@ -216,7 +216,7 @@
                 {% if history_task %}
                     {% for h in history_task %}
                         <li class="list-group-item d-flex justify-content-between">
-                        <dev>{{ loop.index }} - {{ h.created.strftime("%d-%m-%Y") }} <span class="text-primary">{{ h.user.name }}
+                        <dev><strong>{{ loop.index }}.</strong> {{ h.created.strftime("%d-%m-%Y") }} <span class="text-primary">{{ h.user.name }}
                         </span>установил(а) статус-
                         <span class="badge bg-info rounded-pill">{{ h.stage if h.stage else h.task_status }}</span> </dev>
                     {% endfor %}
