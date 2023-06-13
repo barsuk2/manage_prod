@@ -21,9 +21,11 @@ def counter_tasks(tasks=None):
     """Возвращает количество задач на доске Актуальное"""
     counter = {}
     if not tasks:
-        tasks = Task.query.filter(Task.board == 'Actual')
-    else:
-        tasks = tasks.filter(Task.board == 'Actual')
+        tasks = db.session.query(Task)
+
+    tasks = tasks.filter(Task.board == 'Actual')
+    # удалить фейковые
+    tasks = tasks.filter(Task.description != 'fake')
     for stage in Task.STAGE:
         counter[stage] = tasks.filter(Task.stage == stage).count()
     counter['importance'] = tasks.filter(Task.importance.in_(('high', 'medium'))).count()
@@ -32,7 +34,6 @@ def counter_tasks(tasks=None):
 
 
 def task_filter(tasks, filter):
-    # tasks = tasks.filter(Task.board == "Actual")
     if filter:
         sample = list(Task.STAGE) + ['importance', 'new']
         if filter not in sample:
@@ -94,6 +95,9 @@ def index(board_id='Actual', task_id=None, user_id=None):
     # Фильтры для основного меню по доске Actual
     filter = request.args.get('filter')
     tasks = task_filter(q, filter)
+    # убрать фейковые задачи
+    tasks = tasks.filter(Task.description != 'fake')
+
     tasks = tasks.order_by(Task.created.desc())
     search_task_form = TaskFilter()
     search_word = request.args.get('search_word')
@@ -141,6 +145,8 @@ def user_tasks(user_id, task_id=None):
         task = Task.query.get_or_404(task_id)
     else:
         task = Task()
+    tasks = tasks.filter(Task.description != 'fake')
+
     tasks = tasks.paginate(per_page=20, error_out=False)
     form = TaskFormEdit(obj=task)
     users = Users.query.all()
@@ -294,9 +300,9 @@ def get_statistic_task():
     form.user.choices = [('all', 'По всем')] + [(user.id, user.name) for user in users]
     form.period.choices = [('current_year', 'Текущий год')] + list(periods)
 
-    normal_tasks = db.session.query(Task.user_id, db.func.count().label('normal')) \
+    rotten_tasks = db.session.query(Task.user_id, db.func.count().label('normal')) \
         .filter(extract('year', Task.completed) == year,
-                Task.completed < Task.deadline).group_by(Task.user_id)
+                Task.completed > Task.deadline).group_by(Task.user_id)
 
     tasks = db.session.query(Task.user_id, Users.name, db.func.count().label('tasks')) \
         .filter(extract('year', Task.completed) == year) \
@@ -304,10 +310,10 @@ def get_statistic_task():
 
     if user_id and user_id != 'all':
         user = Users.query.get_or_404(user_id)
-        normal_tasks = normal_tasks.filter(Task.user_id == user.id)
+        rotten_tasks = rotten_tasks.filter(Task.user_id == user.id)
         tasks = tasks.filter(Task.user_id == user.id)
     if period != 'current_year':
-        normal_tasks = normal_tasks.filter(extract('month', Task.completed) == period)
+        rotten_tasks = rotten_tasks.filter(extract('month', Task.completed) == period)
         tasks = tasks.filter(extract('month', Task.completed) == period)
         # SQL запрос
         # select name,  count(tasks.id), ( select count(*) from tasks where user_id  = 106 and
@@ -323,7 +329,7 @@ def get_statistic_task():
 
     df_tasks = pd.read_sql_query(tasks.statement, current_app.config.get('SQLALCHEMY_DATABASE_URI'),
                                  index_col='user_id')
-    df_normal = pd.read_sql_query(normal_tasks.statement, current_app.config.get('SQLALCHEMY_DATABASE_URI'),
+    df_normal = pd.read_sql_query(rotten_tasks.statement, current_app.config.get('SQLALCHEMY_DATABASE_URI'),
                                   index_col='user_id')
     df_tasks = df_tasks.join(df_normal)
     fig = go.Figure()
@@ -339,7 +345,7 @@ def get_statistic_task():
     fig.add_trace(go.Bar(
         x=df_tasks['name'],
         y=df_tasks['normal'],
-        name='Задачи выполенные в срок',
+        name='Дедлайн просрочен',
         marker_color='green',
         texttemplate="%{y}",
         textposition="inside",
@@ -348,7 +354,7 @@ def get_statistic_task():
     ))
     fig.update_layout(
         title=go.layout.Title(
-            text="Диаграмма выполенные задачи<br><sup>Дополнительно - задачи выполенные в срок</sup>",
+            text="Диаграмма выполенные задачи<br><sup>Дополнительно - дедлайн просрочен</sup>",
             xref="paper",
             x=0
         ),
