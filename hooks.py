@@ -15,8 +15,7 @@ def roles_required(*roles):
         @wraps(f)
         def wrapper(*args, **kwargs):
             if not current_user.has_role(*roles):
-                print('asdasd')
-                return render_template('access_denied.html', roles=roles, ROLES=Roles.ROLES), 403
+                return render_template('access_denied.html'), 403
             return f(*args, **kwargs)
 
         return wrapper
