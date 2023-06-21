@@ -219,7 +219,7 @@ def logout():
 @login_required
 def del_user(user_id):
     user = Users.query.get_or_404(user_id)
-    db.session.delete(user)
+    user.deleted = datetime.datetime.now()
     db.session.commit()
     return redirect(url_for('.get_users'))
 
@@ -253,7 +253,7 @@ def user_profile(user_id):
 @login_required
 def get_users():
     counter = counter_tasks()
-    users = Users.query.order_by(Users.name).all()
+    users = Users.query.filter(Users.deleted == None).order_by(Users.name).all()
     return render_template('users/users.html', users=users, counter=counter)
 
 
@@ -270,6 +270,7 @@ def user_edit(user_id=None):
     form = UserForm(obj=user)
     if request.method == 'POST':
         if form.validate_on_submit():
+
             if form.password.data:
                 user.password_hash = user.hash_password(form.password.data)
             form.populate_obj(user)

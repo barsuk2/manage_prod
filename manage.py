@@ -100,6 +100,7 @@ class Super(Command):
         user = Users(**param)
         db.session.add(user)
         db.session.commit()
+        user.add_roles(['super'])
 
 
 manager.add_command('add-fake-users', AddFakeUsers())
