@@ -142,13 +142,10 @@ class History(db.Model):
 class Roles(db.Model):
     __tablename__ = 'roles'
 
-    # ROLES = ('super', 'admin', 'pm', 'qa', 'user_middle', 'user_junior')
     ROLES = ('super', 'admin', 'user', 'card')
 
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE', onupdate='CASCADE'),
                         primary_key=True)
-    user_id = db.Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE', onupdate='CASCADE'), primary_key=True)
-
     created = db.Column(db.DateTime(timezone=True), server_default=db.text('now()'), nullable=False)
     roles = db.Column(ARRAY(db.String(32), zero_indexes=True))
 
