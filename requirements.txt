@@ -1,7 +1,8 @@
 pytz
 
 flask
-flask-script
+flask-script==2.0.3
+
 flask-login
 
 wtforms
@@ -14,7 +15,7 @@ Pillow
 redis
 rq
 
-pandas
+# pandas
 plotly
 
 async-timeout

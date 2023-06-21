@@ -271,10 +271,10 @@ def user_edit(user_id=None):
     if request.method == 'POST':
         if form.validate_on_submit():
             if form.password.data:
-                form.password.data = user.set_password(form.password.data)
+                user.password_hash = user.hash_password(form.password.data)
             form.populate_obj(user)
             db.session.add(user)
-            db.session.flush()
+            db.session.commit()
             user.add_roles(request.form.getlist('roles'))
 
             return redirect(url_for('.user_edit', user_id=user.id))

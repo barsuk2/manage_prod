@@ -34,7 +34,7 @@ $ mkvirtualenv -p python3 manage_prod
 $ workon manage_prod
 $ pip install -r requirements.txt
 $ sudo -u postgres psql -c "CREATE USER mp_owner ENCRYPTED PASSWORD 'mp_owner'"
-$ sudo -u postgres psql -c "CREATE DATABASE mp_base OWNER mp_base"
+$ sudo -u postgres psql -c "CREATE DATABASE mp_base OWNER mp_owner"
 ```
 
 

@@ -57,6 +57,7 @@ class AddFakeTasks(Command):
                 db.session.add(task)
             db.session.flush()
             db.session.commit()
+            db.session.commit()
 
 
 class DelFakeTasks(Command):
