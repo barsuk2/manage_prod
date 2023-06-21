@@ -13,12 +13,11 @@
     {# Список задач #}
     <div class="col-6">
     {% if user.id %}
-        <form id="form-delete" class="form-inline" method="post"
-              action="">
+        <form>
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         </form>
     {% endif %}
-    <h3 class="offset-2 mb-3">Редактируем юзера  {{ user.name }}{{ user.id }}</h3>
+    <h3 class="offset-2 mb-3">Редактируем юзера {{ user.name }}{{ user.id }}</h3>
 
     <form method="POST" id="form-edit" class="form-horizontal" enctype="multipart/form-data">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
@@ -70,50 +69,57 @@
         </div>
         <div class="row offset-2">
             <h3 class="">Роли </h3>
-        {% for role in roles %}
-            <div class="mb-5">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="{{ role }}" id="flexCheckDefault" name="roles">
-                <label class="form-check-label" for="flexCheckDefault">
-                    {{ role }}
-                </label>
-            </div>
-        {% endfor %}
-        </div>
-        
-        <div class="row justify-content-between mb-3">
-            <div class="col-auto">
-                <button class="btn btn-primary">Сохранить</button>
-                {% if user.id %}
-                    <a href="#modal-delete" data-bs-toggle="modal" class="btn btn-outline-danger">Удалить</a>
-                {% endif %}
-                <a href="{{ url_for('.get_users') }}" class="btn btn-secondary">Отмена</a>
+            {% for role in roles %}
+                <div class="mb-5">
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="{{ role }}" id="flexCheckDefault"
+                           name="roles">
+                    <label class="form-check-label" for="flexCheckDefault">
+                        {{ role }}
+                    </label>
+                </div>
+            {% endfor %}
             </div>
 
-        </div>
+            <div class="row justify-content-between mb-3">
+                <div class="col-auto">
+                    <button class="btn btn-primary">Сохранить</button>
+                    {% if user.id %}
+                        <a href="#modal-delete" data-bs-toggle="modal" class="btn btn-outline-danger">Удалить</a>
+                    {% endif %}
+                    <a href="{{ url_for('.get_users') }}" class="btn btn-secondary">Отмена</a>
+                </div>
+
+            </div>
     </form>
     {# Описание задачи #}
-    <form method="post" action="{{ url_for('.del_user', user_id=user.id) }}">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="modal" id="modal-delete">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h4 class="modal-title">Удалить задачу?</h4>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    Задача будет удалена на совсем. Запись появится в таблице 'history'
-                </div>
-                <div class="modal-footer">
-                    <button type="submit" class="btn btn-danger" id="btn-delete">Удалить</button>
-                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+    <form id="form_modal">
+        <div class="modal" id="modal-delete">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Удалить задачу?</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        Задача будет удалена на совсем. Запись появится в таблице 'history'
+                    </div>
+                    <div class="modal-footer">
+                        {% if user_id !=0 %}
+                            <button type="submit" class="btn btn-danger" id="btn-delete">Удалить юзера</button>
+
+                        {% endif %}
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
     </form>
-
+    {% if user_id != 0 %}
+        <form id="form-delete" method="post" action="{{ url_for('.del_user', user_id=user.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        </form>
+    {% endif %}
 {% endblock body %}
 {% block script %}
     <script>
@@ -131,15 +137,19 @@
     <script type="text/javascript">
 
         let roles = '{{ user.role.roles | tojson| safe if user.role.roles}}'
-        roles = JSON.parse(roles)
-           $('[name=roles]').each(function () {
-               if (roles.includes($(this).attr('value'))) {
-                   $(this).attr('checked', '')
-               }
-           })
+        if (roles) {
+            roles = JSON.parse(roles)
+            $('[name=roles]').each(function () {
+                if (roles.includes($(this).attr('value'))) {
+                    $(this).attr('checked', '')
+                }
+            })
+        }
+
 
         $("#btn-delete").on("click", function (e) {
             e.preventDefault();
+            console.log($('#form-delete'))
             $("#form-delete").submit();
         });
     </script>
