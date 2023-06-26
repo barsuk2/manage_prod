@@ -30,7 +30,7 @@ def upgrade() -> None:
                     sa.Column('board', sa.Enum('Actual', 'Complete', 'Plans', 'Release', name='board'), nullable=True),
                     sa.Column('task_status', sa.Enum('Job', 'Pause', 'Complete', 'Project', name='task_status'),
                               nullable=True),
-                    sa.Column('stage', sa.Enum('Dev', 'QA', 'Review', 'Release', name='stage'), nullable=True),
+                    sa.Column('stage', sa.Enum('Dev', 'Qa', 'Review', 'Release', 'Done', 'Not_started', name='stage'), nullable=True),
                     sa.Column('created', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
                     sa.Column('user_id', sa.Integer(), nullable=True),
                     sa.Column('title', sa.String(), nullable=True),
