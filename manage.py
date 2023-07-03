@@ -48,15 +48,7 @@ class AddFakeTasks(Command):
                 task = Task(board=board, stage=stage, description='fake',
                             created=created, deadline=deadline, completed=completed, importance=importance_, tags=tag,
                             user_id=user_id, title=''.join(secrets.choice(details) for _ in range(10)))
-                # tags =
-                # importance =
-                # comments =
-                # task_status =
-                # deadline =
-                # estimate =
                 db.session.add(task)
-            db.session.flush()
-            db.session.commit()
             db.session.commit()
 
 
