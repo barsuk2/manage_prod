@@ -142,7 +142,7 @@ class History(db.Model):
 class Roles(db.Model):
     __tablename__ = 'roles'
 
-    ROLES = ('super', 'admin', 'user', 'card')
+    ROLES = ('super', 'admin', 'user')
 
     user_id = db.Column(db.Integer(), db.ForeignKey('users.id', ondelete='CASCADE', onupdate='CASCADE'),
                         primary_key=True)
@@ -151,13 +151,3 @@ class Roles(db.Model):
 
     def get_roles(self):
         return json.dumps(self.roles)
-
-
-class Card(db.Model):
-    __tablename__ = 'cards'
-    id = db.Column(db.Integer, primary_key=True)
-    category = db.Column('category', db.String)
-    subcategory = db.Column('subcategory', db.String)
-    questions = db.Column('questions', db.String)
-    response = db.Column('response', db.String)
-    abstract = db.Column('abstract', db.String)  # ключевые слова

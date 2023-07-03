@@ -76,10 +76,6 @@
                 </li>
                 <li class="list-group-item d-flex justify-content-between"><a href="{{ url_for('.get_users') }}">Юзеры и роли</a>
                     <i class="fa fs-4 fa-users text-info" aria-hidden="true"></i></li>
-                {% if current_user.has_role('card') %}
-                <li class="list-group-item "><a href="{{ url_for('.cards_get') }}">Cards</a>
-                {% endif %}
-
             </ul>
                 {% endif %}
 
