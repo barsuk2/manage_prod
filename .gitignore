@@ -1,3 +1,4 @@
+config_telegram.py
 node_modules
 wkhtmltox
 roompark/static/public/css/bundle.css
