@@ -1,6 +1,7 @@
 import json
 import string
 import secrets
+import telebot
 
 import plotly
 import plotly.graph_objs as go
@@ -444,3 +445,18 @@ def card_del(card_id=None):
     db.session.delete(card)
     db.session.commit()
     return redirect(url_for('.cards_get'))
+
+
+@bp.route('/telegram')
+def send_message():
+    token = current_app.config.get('TELEGA_TOKEN')
+    bot = telebot.TeleBot(token)
+
+    @bot.message_handler(commands=['help', 'start'])
+    def send_welcome(message):
+        bot.reply_to(message, """\
+    Hi there, I am EchoBot.
+    I am here to echo your kind words back to you. Just say anything nice and I'll say the exact same thing to you!\
+    """)
+
+    return render_template('telegram/index.html', message=message)
