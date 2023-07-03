@@ -4,12 +4,14 @@ from collections import OrderedDict
 
 from flask import current_app
 from flask_login import UserMixin
+from lagring.assets import ImageAsset
 
 from core import db, login_manager
 from sqlalchemy.dialects.postgresql import JSONB, ARRAY
+from core import storage
 
 
-class Users(db.Model, UserMixin):
+class Users(db.Model, UserMixin, storage.Entity):
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -24,6 +26,7 @@ class Users(db.Model, UserMixin):
     task = db.relationship('Task', backref='user')
     history = db.relationship('History', backref='user')
     role = db.relationship('Roles', backref='user', uselist=False)
+    photo = ImageAsset(width=192, height=192, transform='fit')
 
     def has_role(self, roles: str) -> True:
         r_ = [True for role in roles.split(',') if role.strip() in self.role.roles]

@@ -242,11 +242,16 @@ def login():
     return render_template('login.html', form=form)
 
 
-@bp.route('/users/profile/<int:user_id>')
+@bp.route('/users/profile/<int:user_id>', methods=('POST', 'GET'))
 @login_required
 def user_profile(user_id: int):
     counter = counter_tasks()
     user = Users.query.get_or_404(user_id)
+    if request.method == 'POST':
+        user.photo = request.files.get('photo')
+        db.session.commit()
+        return redirect(url_for('.user_profile', user_id=user.id))
+
     return render_template('users/profile_user.html', user=user, counter=counter)
 
 

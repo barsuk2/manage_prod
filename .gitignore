@@ -1,5 +1,6 @@
 node_modules
 wkhtmltox
+config_telegram.py
 roompark/static/public/css/bundle.css
 roompark/static/public/css/bundle_print.css
 roompark/static/public/css/bundle_presentation.css

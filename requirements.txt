@@ -31,3 +31,4 @@ psycopg2-binary
 typing-extensions
 Werkzeug
 zipp
+Lagring

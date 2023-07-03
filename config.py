@@ -5,3 +5,6 @@ SECRET_KEY = '8e+p,Dxn<lVJ>%c@"N/#~DhiQ]BD=*@x\\(xU^c!El@E0d,1<)_(bbj3fGc&`5I&[r
 
 # Параметры авторизации
 REMEMBER_COOKIE_DURATION = 1
+ASSET_STORAGE_ROOT = '/srv/manage_prod/var/assets'
+ASSET_URL_ROOT = '/assets'
+

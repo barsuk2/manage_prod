@@ -15,7 +15,7 @@
         <div class="col-4">
             <div class="">
                 <div class="card-body mb-3">
-                        <img class="mb-3" src="/static/person.png" width="200" height="200">
+                        <img class="mb-3" src="{{ user.photo.url }}">
                     <div class="d-grid gap-2 col-6">
                         {% if user.id == current_user.id %}
                             <button type="button" class="btn btn-success btn-sm text-nowrap" data-bs-toggle="modal"
@@ -70,60 +70,31 @@
 
     <div class="col-4">
     </div>
+<form id="form_modal" method="post" action="{{ url_for('.user_profile', user_id=user.id) }}" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <div class="modal" id="modal-photo-upload">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title">Выбрать фото</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input class="form-control" type="file" name="photo">
+                    </div>
+                    <div class="modal-footer">
+                        {% if user_id !=0 %}
+                            <button type="submit" class="btn btn-danger" id="btn-delete">Добавить фото</button>
 
+                        {% endif %}
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 
 {% endblock body %}
 {% block script %}
-    {#<script>
-        $(function () {
-            let $task = $('tr#task'), $block_task_manage = $('.task.manage'), $block_task_history = $('.task.history'),
-                $block_task_comment = $('.task.comment'), board = '{{ page }}';
-            $block_task_comment.hide()
-            $block_task_history.hide()
-            $block_task_manage.show()
 
-            // В зависимости от важности покрасим строки таблицы
-            $task.each(function () {
-                if ($(this).find('#importance i').hasClass('text-danger')) {
-                    $(this).find('#id').addClass('border-start border-5 border-danger')
-                } else if ($(this).find('#importance i').hasClass('text-success')) {
-                    $(this).find('#id').addClass('border-start border-5 border-success')
-                }
-            });
-            // подсветить доску
-            $(`#${board}`).addClass('active')
-
-            // Подсвечивает активную задачу в таблице
-            #}{#$task.on('click', function () {
-                var task_id = $(this).find('#task_id').text()
-                        url = '{{ url_for('.index') }}' + `${board}/` + `task/${task_id}`
-                location.assign(url)
-                description_task.focus()
-            });#}{#
-            // Отображение нажатого радио баттона stage
-            $(':input[name="stage"]').each(function () {
-                if ($(this).attr('value') === '{{ task.stage }}') {
-                    $(this).attr('checked', 'checked')
-                }
-            });
-            // Навигация задачи - вкладки
-            $('.nav-task li').on('click', function () {
-                this_id = $(this).find('a').attr('id')
-                // блок задача - комментарии
-                $(this).find('a').addClass("active")
-                $('.nav-task li').not($(this)).find('a').removeClass('active')
-                // отображение блока комментарий, управление или история
-                $('.task').each(function () {
-                    if ($(this).hasClass(this_id)) {
-                        $(this).show()
-                        $block_task_history.show()
-
-                    } else {
-                        $(this).hide()
-                    }
-                })
-
-            });
-        });
-    </script>#}
 {% endblock script %}
