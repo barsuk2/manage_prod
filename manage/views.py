@@ -100,7 +100,12 @@ def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
     # убрать фейковые задачи
     tasks = tasks.filter(Task.description != 'fake')
 
+    # Сортировка
+    if board_id == 'Complete':
+        print(board_id)
+        tasks = tasks.order_by(Task.completed.desc())
     tasks = tasks.order_by(Task.created.desc())
+
     search_task_form = TaskFilter()
     search_word = request.args.get('search_word')
     if search_word:
