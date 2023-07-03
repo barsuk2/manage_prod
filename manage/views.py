@@ -1,24 +1,24 @@
 import json
 import string
 import secrets
-
 import plotly
-import plotly.graph_objs as go
-import plotly.express as px
 import datetime
-from sqlalchemy import extract, literal_column
 import pandas as pd
+import plotly.express as px
+import plotly.graph_objs as go
+from typing import Dict, NoReturn
+from sqlalchemy import extract, literal_column
 from flask_login import login_required, login_user, logout_user, current_user
 from flask import redirect, url_for, flash, render_template, abort, request, jsonify, current_app
 
-from hooks import roles_required
 from . import bp
 from core import db
+from hooks import roles_required
 from models import Task, Users, History, Roles
 from manage.forms import TaskFormEdit, LoginForm, UserForm, StatisticFilter, TaskFilter
 
 
-def counter_tasks(tasks=None):
+def counter_tasks(tasks: Task = None) -> Dict:
     """Возвращает количество задач на доске Актуальное"""
     counter = {}
     if not tasks:
@@ -34,7 +34,7 @@ def counter_tasks(tasks=None):
     return counter
 
 
-def task_filter(tasks, filter):
+def task_filter(tasks: Task, filter: str) -> Task:
     if filter:
         sample = list(Task.STAGE) + ['importance', 'new']
         if filter not in sample:
@@ -48,7 +48,8 @@ def task_filter(tasks, filter):
     return tasks
 
 
-def validate_form(form, task):
+def validate_form(form, task: Task) -> NoReturn:
+    "Проверяет входную форму"
     if form.user_id.data == 0:
         form.user_id.data = None
     if form.importance.data == '':
@@ -63,7 +64,7 @@ def validate_form(form, task):
     task.comments = comments
 
 
-def search_task(tasks, word):
+def search_task(tasks: Task, word: str):
     tasks = tasks.filter(Task.title.ilike(f'%{word}%'))
     return tasks
 
@@ -72,7 +73,7 @@ def search_task(tasks, word):
 @bp.route('/<board_id>', methods=('POST', 'GET'))
 @bp.route('/<board_id>/task/<int:task_id>', methods=('POST', 'GET'))
 @login_required
-def index(board_id='Actual', task_id=None, user_id=None):
+def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
     history_task = []
     user = None
     create_task = request.args.get('create_task')
@@ -135,7 +136,7 @@ def index(board_id='Actual', task_id=None, user_id=None):
 
 @bp.route('/tasks/user/<int:user_id>', methods=('POST', 'GET'))
 @bp.route('/task/<int:task_id>/user/<int:user_id>', methods=('POST', 'GET'))
-def user_tasks(user_id, task_id=None):
+def user_tasks(user_id: int, task_id: int = None):
     user = Users.query.get_or_404(user_id)
     filter = request.args.get('filter')
     history_task = ''
@@ -177,7 +178,7 @@ def user_tasks(user_id, task_id=None):
                            user=user, filter=filter, search_task_form=search_task_form)
 
 
-def loging_stage_task(task):
+def loging_stage_task(task: Task) -> NoReturn:
     """ Добавляет в таблицу History движение задачи """
     params = dict(task_id=task.id, title=task.title, stage=task.stage, task_status=task.task_status,
                   board=task.board, user_id=task.user_id)
@@ -193,7 +194,7 @@ def loging_stage_task(task):
 @bp.route('/task/deleted/<board_id>/<int:task_id>', methods=('POST',))
 @bp.route('/task/deleted/<int:user_id>/<int:task_id>', methods=('POST',))
 @login_required
-def del_task(task_id, user_id=None, board_id=None):
+def del_task(task_id: int, user_id: int = None, board_id: int = None):
     task = Task.query.get_or_404(task_id)
     db.session.delete(task)
     db.session.add(History(task_id=task.id, stage=task.stage, board=task.board, user_id=current_user.id,
@@ -217,7 +218,7 @@ def logout():
 
 @bp.post('/users/delete/<int:user_id>')
 @login_required
-def del_user(user_id):
+def del_user(user_id: int):
     user = Users.query.get_or_404(user_id)
     user.deleted = datetime.datetime.now()
     db.session.commit()
@@ -243,7 +244,7 @@ def login():
 
 @bp.route('/users/profile/<int:user_id>')
 @login_required
-def user_profile(user_id):
+def user_profile(user_id: int):
     counter = counter_tasks()
     user = Users.query.get_or_404(user_id)
     return render_template('users/profile_user.html', user=user, counter=counter)
@@ -261,7 +262,7 @@ def get_users():
 @bp.route('/users/new', methods=('POST', 'GET'))
 @roles_required('admin, super')
 @login_required
-def user_edit(user_id=None):
+def user_edit(user_id: int = None):
     counter = counter_tasks()
     if user_id:
         user = Users.query.get_or_404(user_id)
@@ -306,7 +307,7 @@ def get_statistic_task():
     periods = ['январь', 'февраль', 'март', 'апрель', 'май', 'июнь', 'июль', 'август', 'сентябрь', 'октябрь', 'ноябрь',
                'декабрь']
     periods = list(zip(range(1, 13), periods))
-    form.user.choices = [('all', 'По всем')] + [(user.id, user.name) for user in users]
+    form.user.choices = [('all', 'По всем')] + [(user.id, user.name) for user in users if not user.deleted]
     form.period.choices = [('current_year', 'Текущий год')] + list(periods)
 
     rotten_tasks = db.session.query(Task.user_id, db.func.count().label('normal')) \
