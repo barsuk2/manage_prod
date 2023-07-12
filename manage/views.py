@@ -75,6 +75,8 @@ def search_task(tasks: Task, word: str):
 @login_required
 def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
     project_id = request.cookies.get('project_id', 1)
+    project = Project.query.get_or_404(project_id)
+
     history_task = []
     user = None
     create_task = request.args.get('create_task')
@@ -91,7 +93,7 @@ def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
     form.user_id.choices = [(0, '')] + [(user.id, user.name) for user in users]
     q = db.session.query(Task)
     if project_id:
-        q = q.filter(Task.project_id == project_id)
+        q = q.filter(Task.project_id == project.id)
 
     # подсчет задач в меню
     counter = counter_tasks(q)
@@ -135,11 +137,11 @@ def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
             db.session.add(task)
             db.session.commit()
             loging_stage_task(task)
-
             return redirect(url_for('.index', **qs))
+
     return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter,
                            history_task=history_task, user=user, filter=filter, create_task=create_task,
-                           search_task_form=search_task_form, project_name=Project.query.get(project_id).title)
+                           search_task_form=search_task_form, project_name=project.title)
 
 
 @bp.route('/project')
@@ -161,11 +163,13 @@ def choice_project():
 def user_tasks(user_id: int, task_id: int = None):
     user = Users.query.get_or_404(user_id)
     project_id = request.cookies.get('project_id', 1)
+    project = Project.query.get_or_404(project_id)
     filter = request.args.get('filter')
     history_task = ''
     tasks = Task.query.filter(Task.user_id == user.id, Task.board == 'Actual')
     if project_id:
-        tasks = tasks.filter(Task.project_id == project_id)
+        project = Project.query.get_or_404(project_id)
+        tasks = tasks.filter(Task.project_id == project.id)
     counter = counter_tasks(tasks)
     tasks = task_filter(tasks, filter)
     search_task_form = TaskFilter()
@@ -201,7 +205,7 @@ def user_tasks(user_id: int, task_id: int = None):
 
         return redirect(url_for('.user_tasks', **qs))
     return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter, history_task=history_task,
-                           user=user, filter=filter, search_task_form=search_task_form)
+                           user=user, filter=filter, search_task_form=search_task_form, project_name=project.title)
 
 
 def loging_stage_task(task: Task) -> NoReturn:

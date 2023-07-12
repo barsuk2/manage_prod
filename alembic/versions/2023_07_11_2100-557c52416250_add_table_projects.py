@@ -23,7 +23,7 @@ def upgrade() -> None:
     sa.Column('title', sa.String(), nullable=True),
     sa.PrimaryKeyConstraint('id')
     )
-    op.execute("INSERT INTO projects (title) VALUES ('tracker'),('sviyjsk');")
+    op.execute("INSERT INTO projects (title) VALUES ('Трекер'),('Свияжск');")
     # ### end Alembic commands ###
 
 
