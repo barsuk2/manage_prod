@@ -132,6 +132,7 @@ def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
                 task.board = 'Complete'
                 task.completed = datetime.datetime.now()
                 del qs['task_id']
+            task.project_id = project_id
             db.session.add(task)
             db.session.commit()
             loging_stage_task(task)
