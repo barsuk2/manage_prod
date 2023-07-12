@@ -30,7 +30,7 @@
     <div class="col-6">
 
     {% if user_id ==0 %}
-    <h3>Доски</h3>
+    <h3>Доски </h3>
         {% include 'nav.html' %}
     {% endif %}
         <h3>{{ 'Список задач' if not user else 'Мои задачи'}} </h3>
@@ -103,9 +103,6 @@
     <div class="col-4" >
         <h3 class="invisible">Задача</h3>
         <div class="float-end">
-{#        {% if page != 'Complete' and user_id == 0 %}#}
-{#        <a class="btn btn-success text-end" id='add_task' href="{{ url_for('.index',create_task=1 ) }}"><i class="fa fa-plus-circle" aria-hidden="true"></i> Добавить задачу</a>#}
-{#        {% endif %}#}
         </div>
         </h1>
         {%  if task_id != 0 or create_task%}

@@ -124,8 +124,10 @@
                 </button>
                 <form action="" method="post"></form>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a href="{{ url_for('.choice_project', project_id=2) }}" class="dropdown-item">Свияжск</a></li>
-                    <li><a href="{{ url_for('.choice_project', project_id=1) }}" class="dropdown-item">Трекер задач </a>
+                    {% for project in projects %}
+                    <li><a href="{{ url_for('.choice_project', project_id=project.id) }}" class="dropdown-item">{{ project.title }}</a></li>
+                    {% endfor %}
+
                     </li>
                 </ul>
             </div>

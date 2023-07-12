@@ -18,6 +18,19 @@ from models import Task, Users, History, Roles, Project
 from manage.forms import TaskFormEdit, LoginForm, UserForm, StatisticFilter, TaskFilter
 
 
+def loging_stage_task(task: Task) -> NoReturn:
+    """ Добавляет в таблицу History движение задачи """
+    params = dict(task_id=task.id, title=task.title, stage=task.stage, task_status=task.task_status,
+                  board=task.board, user_id=task.user_id)
+    history_task = History.query.filter(History.task_id == task.id).order_by(History.created.desc()).first()
+    if not history_task or history_task and (history_task.stage != task.stage or
+                                             history_task.task_status != task.task_status or
+                                             history_task.user_id != task.user_id or history_task.board != task.board):
+        task_history = History(**params)
+        db.session.add(task_history)
+    db.session.commit()
+
+
 def counter_tasks(tasks: Task = None) -> Dict:
     """Возвращает количество задач на доске Актуальное"""
     counter = {}
@@ -69,6 +82,16 @@ def search_task(tasks: Task, word: str):
     return tasks
 
 
+@bp.route('/project/<new_proj>')
+@roles_required('super')
+def add_proj(new_proj):
+    if not Project.query.filter(Project.title == new_proj.capitalize()):
+        proj = Project(title=new_proj)
+        db.session.add(proj)
+        db.session.commit()
+    return redirect(url_for('.index'))
+
+
 @bp.route('/', methods=('POST', 'GET'))
 @bp.route('/<board_id>', methods=('POST', 'GET'))
 @bp.route('/<board_id>/task/<int:task_id>', methods=('POST', 'GET'))
@@ -76,6 +99,7 @@ def search_task(tasks: Task, word: str):
 def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
     project_id = request.cookies.get('project_id', 1)
     project = Project.query.get_or_404(project_id)
+    projects = Project.query.all()
 
     history_task = []
     user = None
@@ -141,7 +165,7 @@ def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
 
     return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter,
                            history_task=history_task, user=user, filter=filter, create_task=create_task,
-                           search_task_form=search_task_form, project_name=project.title)
+                           search_task_form=search_task_form, project_name=project.title, projects=projects, )
 
 
 @bp.route('/project')
@@ -164,6 +188,8 @@ def user_tasks(user_id: int, task_id: int = None):
     user = Users.query.get_or_404(user_id)
     project_id = request.cookies.get('project_id', 1)
     project = Project.query.get_or_404(project_id)
+    projects = Project.query.all()
+
     filter = request.args.get('filter')
     history_task = ''
     tasks = Task.query.filter(Task.user_id == user.id, Task.board == 'Actual')
@@ -205,20 +231,8 @@ def user_tasks(user_id: int, task_id: int = None):
 
         return redirect(url_for('.user_tasks', **qs))
     return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter, history_task=history_task,
-                           user=user, filter=filter, search_task_form=search_task_form, project_name=project.title)
-
-
-def loging_stage_task(task: Task) -> NoReturn:
-    """ Добавляет в таблицу History движение задачи """
-    params = dict(task_id=task.id, title=task.title, stage=task.stage, task_status=task.task_status,
-                  board=task.board, user_id=task.user_id)
-    history_task = History.query.filter(History.task_id == task.id).order_by(History.created.desc()).first()
-    if not history_task or history_task and (history_task.stage != task.stage or
-                                             history_task.task_status != task.task_status or
-                                             history_task.user_id != task.user_id or history_task.board != task.board):
-        task_history = History(**params)
-        db.session.add(task_history)
-    db.session.commit()
+                           user=user, filter=filter, projects=projects, search_task_form=search_task_form,
+                           project_name=project.title)
 
 
 @bp.route('/task/deleted/<board_id>/<int:task_id>', methods=('POST',))
