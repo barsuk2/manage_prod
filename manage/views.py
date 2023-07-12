@@ -9,12 +9,12 @@ import plotly.graph_objs as go
 from typing import Dict, NoReturn
 from sqlalchemy import extract, literal_column
 from flask_login import login_required, login_user, logout_user, current_user
-from flask import redirect, url_for, flash, render_template, abort, request, jsonify, current_app
+from flask import redirect, url_for, flash, render_template, abort, request, jsonify, current_app, make_response
 
 from . import bp
 from core import db
 from hooks import roles_required
-from models import Task, Users, History, Roles
+from models import Task, Users, History, Roles, Project
 from manage.forms import TaskFormEdit, LoginForm, UserForm, StatisticFilter, TaskFilter
 
 
@@ -74,6 +74,7 @@ def search_task(tasks: Task, word: str):
 @bp.route('/<board_id>/task/<int:task_id>', methods=('POST', 'GET'))
 @login_required
 def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
+    project_id = request.cookies.get('project_id', 1)
     history_task = []
     user = None
     create_task = request.args.get('create_task')
@@ -89,6 +90,8 @@ def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
     users = Users.query.all()
     form.user_id.choices = [(0, '')] + [(user.id, user.name) for user in users]
     q = db.session.query(Task)
+    if project_id:
+        q = q.filter(Task.project_id == project_id)
 
     # подсчет задач в меню
     counter = counter_tasks(q)
@@ -136,16 +139,34 @@ def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
             return redirect(url_for('.index', **qs))
     return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter,
                            history_task=history_task, user=user, filter=filter, create_task=create_task,
-                           search_task_form=search_task_form)
+                           search_task_form=search_task_form, project_name=Project.query.get(project_id).title)
+
+
+@bp.route('/project')
+def choice_project():
+    """
+    Получает параметр project_id из GET-запроса и сохраняет его в куке.
+    :param project_id: идентификатор проекта
+    :return: перенаправление на главную страницу с сохраненным идентификатором проекта в куке
+    """
+
+    project_id = request.args.get('project_id')
+    print(project_id)
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('project_id', project_id)
+    return resp
 
 
 @bp.route('/tasks/user/<int:user_id>', methods=('POST', 'GET'))
 @bp.route('/task/<int:task_id>/user/<int:user_id>', methods=('POST', 'GET'))
 def user_tasks(user_id: int, task_id: int = None):
     user = Users.query.get_or_404(user_id)
+    project_id = request.cookies.get('project_id', 1)
     filter = request.args.get('filter')
     history_task = ''
     tasks = Task.query.filter(Task.user_id == user.id, Task.board == 'Actual')
+    if project_id:
+        tasks = tasks.filter(Task.project_id == project_id)
     counter = counter_tasks(tasks)
     tasks = task_filter(tasks, filter)
     search_task_form = TaskFilter()

@@ -67,6 +67,14 @@ def load_user(user_id):
     return db.session.query(Users).get(user_id)
 
 
+class Project(db.Model):
+    __tablename__ = 'projects'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String)
+
+    task = db.relationship('Task', back_populates='project')
+
+
 class Task(db.Model):
     __tablename__ = 'tasks'
 
@@ -92,22 +100,26 @@ class Task(db.Model):
     tags = db.Column(db.String, nullable=True)
     importance = db.Column(db.Enum(*list(IMPORTANCE.keys()), name='importance'))
     comments = db.Column(ARRAY(db.Text(), zero_indexes=True))
+    project_id = db.Column(db.Integer, db.ForeignKey('projects.id'), default='1', server_default='1', nullable=False)
 
-    def return_as_json(self):
-        resp = {
-            'id': self.id,
-            'parent_id': self.parent_id,
-            'board': self.board,
-            'task_status': self.task_status,
-            'stage': self.stage,
-            'user_id': self.user_id,
-            'title': self.title,
-            'description': self.description,
-            'deadline': self.deadline,
-            'estimate': self.estimate,
-            'tags': self.tags,
-        }
-        return resp
+    project = db.relationship('Project', back_populates='task')
+
+
+def return_as_json(self):
+    resp = {
+        'id': self.id,
+        'parent_id': self.parent_id,
+        'board': self.board,
+        'task_status': self.task_status,
+        'stage': self.stage,
+        'user_id': self.user_id,
+        'title': self.title,
+        'description': self.description,
+        'deadline': self.deadline,
+        'estimate': self.estimate,
+        'tags': self.tags,
+    }
+    return resp
 
 
 class CommentsTask(db.Model):

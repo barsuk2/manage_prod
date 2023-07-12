@@ -4,60 +4,64 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.2.1/css/font-awesome.css" rel="stylesheet">
-    <link rel="stylesheet" href="/static/bootstrap-5.2.2/bootstrap.css"  type="text/css" />
+    <link rel="stylesheet" href="/static/bootstrap-5.2.2/bootstrap.css" type="text/css"/>
     <link rel="icon" type="image/png" href="/static/favicon.ico" sizes="16x16">
-    <script src="/static/bootstrap-5.2.2/bootstrap.bundle.min.js" integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3" crossorigin="anonymous"></script>
+    <script src="/static/bootstrap-5.2.2/bootstrap.bundle.min.js"
+            integrity="sha384-OERcA2EqjJCMA+/3y+gxIOqMEjwtxJY7qPCqsdltbNJuaOe923+mo//f6V8Qbsw3"
+            crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <style>
-    .table-filters {
-    margin: 5px 0 10px;
-    padding: 4px 8px;
-    background-color: #eee;
-    border-top: 1px dashed #bbb;
-    border-bottom: 1px dashed #bbb;
-}
-a {
-    text-decoration: none;
-}
-a:hover{
-  text-decoration: underline;
-  color: #337ab7;
-}
+        .table-filters {
+            margin: 5px 0 10px;
+            padding: 4px 8px;
+            background-color: #eee;
+            border-top: 1px dashed #bbb;
+            border-bottom: 1px dashed #bbb;
+        }
 
-{#@font-face {
-  font-family: 'Roboto Condensed';
-  font-style: normal;
-  font-weight: 400;
-  src: url(/static/ieVl2ZhZI2eCN5jzbjEETS9weq8-19a7CA.ttf) format('truetype');
-}#}
+        a {
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+            color: #337ab7;
+        }
+
+        {#@font-face {
+          font-family: 'Roboto Condensed';
+          font-style: normal;
+          font-weight: 400;
+          src: url(/static/ieVl2ZhZI2eCN5jzbjEETS9weq8-19a7CA.ttf) format('truetype');
+        }#}
     </style>
     {% block headers %}
     {% endblock %}
 </head>
 <body>
 {% macro icon_stage(stage) %}
-{#выводит иконку этапа#}
-{% if stage == 'Dev' %}
-{% set class_ = 'text-primary' %}
-{% set title = 'Разработка' %}
-{% elif stage == 'Qa'%}
-{% set class_ = 'text-warning' %}
-{% set title = 'На тестировании' %}
-{% elif stage == 'Review'%}
-{% set class_ = 'text-dark' %}
-{% set title = 'На ревью' %}
-{% set class_ = 'text-secondary' %}
-{% elif stage == 'Release'%}
-{% set title = 'Готов к релизу' %}
-{% set class_ = 'text-success' %}
-{% elif stage == 'Done'%}
-{% set class_ = 'text-success' %}
-{% else %}
-{% set class_ = 'invisible' %}
-{% endif %}
+    {#выводит иконку этапа#}
+    {% if stage == 'Dev' %}
+        {% set class_ = 'text-primary' %}
+        {% set title = 'Разработка' %}
+    {% elif stage == 'Qa' %}
+        {% set class_ = 'text-warning' %}
+        {% set title = 'На тестировании' %}
+    {% elif stage == 'Review' %}
+        {% set class_ = 'text-dark' %}
+        {% set title = 'На ревью' %}
+        {% set class_ = 'text-secondary' %}
+    {% elif stage == 'Release' %}
+        {% set title = 'Готов к релизу' %}
+        {% set class_ = 'text-success' %}
+    {% elif stage == 'Done' %}
+        {% set class_ = 'text-success' %}
+    {% else %}
+        {% set class_ = 'invisible' %}
+    {% endif %}
 
 
-<span class="fa-stack fa-1x {{ class_ }}" title="{{ title }}">
+    <span class="fa-stack fa-1x {{ class_ }}" title="{{ title }}">
     <i class="fa fa-square-o  fa-stack-2x"></i>
     <i class="fa fa-play  fa-stack-1x"></i>
 </span>
@@ -72,45 +76,63 @@ a:hover{
 {% macro importance(importent) %}
     {% set size = 'fa-1x' %}
     {% if importent == 'high' %}
-    <span title="Важность высокая">
-    <i class="text-danger fa {{ size }} fa-long-arrow-up" aria-hidden="false" ></i>
+        <span title="Важность высокая">
+    <i class="text-danger fa {{ size }} fa-long-arrow-up" aria-hidden="false"></i>
     <i class="text-danger fa {{ size }} fa-long-arrow-up" aria-hidden="false"></i>
     </span>
-{% elif importent == 'medium'%}
-    {% set class_ = 'text-danger fa-long-arrow-up' %}
-    {% set title="Важность средняя" %}
-{% elif importent == 'normal'%}
-    {% set class_ = 'fa-long-arrow-up text-success' %}
-    {% set title="Важность нормальная" %}
-{% elif importent == 'low'%}
-    {% set class_ = 'fa-long-arrow-down text-success' %}
-    {% set title="Важность низкая" %}
-{% endif %}
-<i class="fa {{ size }} {{ class_ }} " aria-hidden="false" title="{{ title }}"></i>
+    {% elif importent == 'medium' %}
+        {% set class_ = 'text-danger fa-long-arrow-up' %}
+        {% set title="Важность средняя" %}
+    {% elif importent == 'normal' %}
+        {% set class_ = 'fa-long-arrow-up text-success' %}
+        {% set title="Важность нормальная" %}
+    {% elif importent == 'low' %}
+        {% set class_ = 'fa-long-arrow-down text-success' %}
+        {% set title="Важность низкая" %}
+    {% endif %}
+    <i class="fa {{ size }} {{ class_ }} " aria-hidden="false" title="{{ title }}"></i>
 
 {% endmacro %}
 {% macro render_pagination(pagination, endpoint, qs) %}
-  <div class=page-items>
-{#    {{ pagination.first }} - {{ pagination.last }} of {{ pagination.total }}#}
-  </div>
-  <ul class=pagination>
-    {% for page in pagination.iter_pages() %}
-      {% if page %}
-        {% if page != pagination.page %}
-          <li class="page-item"><a class="page-link" href="{{ url_for(endpoint, page=page, **qs) }}">{{ page }}</a></li>
-        {% else %}
-            <li class="page-item active"><a class="page-link">{{ page }}</a></li>
-        {% endif %}
-      {% else %}
-        <span class="ellipsis">...</span>
-      {% endif %}
-    {% endfor %}
-  </ul>
+    <div class=page-items>
+    </div>
+    <ul class=pagination>
+        {% for page in pagination.iter_pages() %}
+            {% if page %}
+                {% if page != pagination.page %}
+                    <li class="page-item"><a class="page-link"
+                                             href="{{ url_for(endpoint, page=page, **qs) }}">{{ page }}</a></li>
+                {% else %}
+                    <li class="page-item active"><a class="page-link">{{ page }}</a></li>
+                {% endif %}
+            {% else %}
+                <span class="ellipsis">...</span>
+            {% endif %}
+        {% endfor %}
+    </ul>
 {% endmacro %}
 <div class="container-fluid">
     <div class="row bg-dark justify-content-between mb-4">
-        <div class="col">
+        <div class="col-auto">
             <a class="text_not_underline h3 text-light" href="{{ url_for('.index') }}">Tracker</a>
+        </div>
+        <div class="col-auto">
+            <div class="dropdown">
+                <button class="btn dropdown-toggle text-light" type="button" id="dropdownMenuButton1"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    <i class="fa fa-flag mx-3 "></i>сменить проект
+                </button>
+                <form action="" method="post"></form>
+                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                    <li><a href="{{ url_for('.choice_project', project_id=2) }}" class="dropdown-item">Свияжск</a></li>
+                    <li><a href="{{ url_for('.choice_project', project_id=1) }}" class="dropdown-item">Трекер задач </a>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+        <div class="col text-end mt-1">
+            <div class="text-info h4">проект {{ project_name }}</div>
         </div>
         <div class="col text-end">
             <div class="dropdown">
@@ -120,32 +142,35 @@ a:hover{
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                     <li><a class="dropdown-item" href="">Мои задачи</a></li>
-                    <li><hr class="dropdown-divider"></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
                     <li><a href="{{ url_for('.logout') }}" class="btn">Logout</a></li>
                 </ul>
 
             </div>
         </div>
     </div>
-{% block nav %}
+    {% block nav %}
 
-{% endblock nav%}
-{% with messages = get_flashed_messages(with_categories=true) %}
-  {% if messages %}
-    <ul class="list-group my-3">
-    {% for category, message in messages %}
-        {% set category = 'list-group-item-' + category %}
-      <li class="list-group-item {{ category }}">{{ message }}</li>
-    {% endfor %}
-    </ul>
-  {% endif %}
-{% endwith %}
-{% block body %}
-{% endblock body%}
+    {% endblock nav %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <ul class="list-group my-3">
+                {% for category, message in messages %}
+                    {% set category = 'list-group-item-' + category %}
+                    <li class="list-group-item {{ category }}">{{ message }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    {% block body %}
+    {% endblock body %}
 
 </div>
 {% block script %}
-{% endblock script%}
+{% endblock script %}
 
 
 </body>
