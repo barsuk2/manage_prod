@@ -105,7 +105,6 @@ def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
 
     # Сортировка
     if board_id == 'Complete':
-        print(board_id)
         tasks = tasks.order_by(Task.completed.desc())
     tasks = tasks.order_by(Task.created.desc())
 
@@ -152,7 +151,6 @@ def choice_project():
     """
 
     project_id = request.args.get('project_id')
-    print(project_id)
     resp = make_response(redirect(url_for('.index')))
     resp.set_cookie('project_id', project_id)
     return resp
@@ -195,6 +193,7 @@ def user_tasks(user_id: int, task_id: int = None):
             task.board = 'Complete'
             task.completed = datetime.datetime.now()
             del qs['task_id']
+        task.project_id = project_id
         db.session.add(task)
         db.session.commit()
 
