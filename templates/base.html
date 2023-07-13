@@ -125,16 +125,19 @@
                 <form action="" method="post"></form>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                     {% for project in projects %}
-                    <li><a href="{{ url_for('.choice_project', project_id=project.id) }}" class="dropdown-item">{{ project.title }}</a></li>
+                        <li><a href="{{ url_for('.choice_project', project_id=project.id) }}"
+                               class="dropdown-item">{{ project.title }}</a></li>
                     {% endfor %}
-
+                    <li>
+                        <hr class="dropdown-divider">
                     </li>
+                    <li><a href="#modal-add-category"  data-bs-toggle="modal" class="btn">Добавить проект</a></li>
                 </ul>
             </div>
 
         </div>
         <div class="col text-end mt-1">
-            <div class="text-info h4">проект {{ project_name }}</div>
+            <div class="text-info h4">проект {{ project.title }}</div>
         </div>
         <div class="col text-end">
             <div class="dropdown">
@@ -149,10 +152,29 @@
                     </li>
                     <li><a href="{{ url_for('.logout') }}" class="btn">Logout</a></li>
                 </ul>
-
             </div>
         </div>
     </div>
+<form method="get" action="{{ url_for('.add_proj') }}">
+            <div class="modal" id="modal-add-category">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h4 class="modal-title">Добавить проект?</h4>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body">
+                            <label for="" class="form-label">Добавить</label>
+                            <input type="text" class="form-control" name="project">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="submit" id='' class="btn btn-danger">Добавить</button>
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Отмена</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
     {% block nav %}
 
     {% endblock nav %}

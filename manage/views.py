@@ -9,7 +9,7 @@ import plotly.graph_objs as go
 from typing import Dict, NoReturn
 from sqlalchemy import extract, literal_column
 from flask_login import login_required, login_user, logout_user, current_user
-from flask import redirect, url_for, flash, render_template, abort, request, jsonify, current_app, make_response
+from flask import redirect, url_for, flash, render_template, abort, request, jsonify, current_app, make_response, g
 
 from . import bp
 from core import db
@@ -82,24 +82,40 @@ def search_task(tasks: Task, word: str):
     return tasks
 
 
-@bp.route('/project/<new_proj>')
+@bp.route('/project/new/')
 @roles_required('super')
-def add_proj(new_proj):
-    if not Project.query.filter(Project.title == new_proj.capitalize()):
-        proj = Project(title=new_proj)
+def add_proj():
+    """ Добавить новый проект"""
+    new_proj = request.args.get('project')
+    print(new_proj)
+    if not Project.query.filter(Project.title == new_proj.capitalize()).first():
+        proj = Project(title=new_proj.capitalize())
         db.session.add(proj)
         db.session.commit()
     return redirect(url_for('.index'))
 
 
+@bp.route('/project')
+def choice_project():
+    """
+    Получает параметр project_id из GET-запроса и сохраняет его в куке.
+    :param project_id: идентификатор проекта
+    :return: перенаправление на главную страницу с сохраненным идентификатором проекта в куке
+    """
+
+    project_id = request.args.get('project_id')
+    resp = make_response(redirect(url_for('.index')))
+    resp.set_cookie('project_id', project_id)
+    return resp
+
+
 @bp.route('/', methods=('POST', 'GET'))
 @bp.route('/<board_id>', methods=('POST', 'GET'))
 @bp.route('/<board_id>/task/<int:task_id>', methods=('POST', 'GET'))
-@login_required
+# @login_required
 def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
     project_id = request.cookies.get('project_id', 1)
     project = Project.query.get_or_404(project_id)
-    projects = Project.query.all()
 
     history_task = []
     user = None
@@ -162,24 +178,10 @@ def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
             db.session.commit()
             loging_stage_task(task)
             return redirect(url_for('.index', **qs))
-
     return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter,
                            history_task=history_task, user=user, filter=filter, create_task=create_task,
-                           search_task_form=search_task_form, project_name=project.title, projects=projects, )
+                           search_task_form=search_task_form)
 
-
-@bp.route('/project')
-def choice_project():
-    """
-    Получает параметр project_id из GET-запроса и сохраняет его в куке.
-    :param project_id: идентификатор проекта
-    :return: перенаправление на главную страницу с сохраненным идентификатором проекта в куке
-    """
-
-    project_id = request.args.get('project_id')
-    resp = make_response(redirect(url_for('.index')))
-    resp.set_cookie('project_id', project_id)
-    return resp
 
 
 @bp.route('/tasks/user/<int:user_id>', methods=('POST', 'GET'))
@@ -188,13 +190,11 @@ def user_tasks(user_id: int, task_id: int = None):
     user = Users.query.get_or_404(user_id)
     project_id = request.cookies.get('project_id', 1)
     project = Project.query.get_or_404(project_id)
-    projects = Project.query.all()
 
     filter = request.args.get('filter')
     history_task = ''
     tasks = Task.query.filter(Task.user_id == user.id, Task.board == 'Actual')
     if project_id:
-        project = Project.query.get_or_404(project_id)
         tasks = tasks.filter(Task.project_id == project.id)
     counter = counter_tasks(tasks)
     tasks = task_filter(tasks, filter)
@@ -231,8 +231,7 @@ def user_tasks(user_id: int, task_id: int = None):
 
         return redirect(url_for('.user_tasks', **qs))
     return render_template('index.html', tasks=tasks, form=form, task=task, counter=counter, history_task=history_task,
-                           user=user, filter=filter, projects=projects, search_task_form=search_task_form,
-                           project_name=project.title)
+                           user=user, filter=filter, search_task_form=search_task_form)
 
 
 @bp.route('/task/deleted/<board_id>/<int:task_id>', methods=('POST',))
