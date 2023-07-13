@@ -125,7 +125,7 @@
                 <form action="" method="post"></form>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                     {% for project in projects %}
-                        {% if current_user.is_authenticated and project.id |string in current_user.role.project_membership %}
+                        {% if current_user.is_authenticated and current_user.role.project_membership and project.id |string in current_user.role.project_membership %}
                         <li><a href="{{ url_for('.choice_project', project_id=project.id) }}"
                                class="dropdown-item">{{ project.title }}</a></li>
                 {% endif %}
