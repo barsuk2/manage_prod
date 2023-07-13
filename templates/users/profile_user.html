@@ -26,7 +26,10 @@
                                     data-bs-target="#modal-photo-upload">
                                 Загрузить фото
                             </button>
-                    <a href="{{ url_for('.user_edit', user_id=user.id) }}" class="btn btn-info btn-sm text-light">Редактировать</a>
+                        {% if current_user.has_role('super') %}
+                            <a href="{{ url_for('.user_edit', user_id=user.id) }}"
+                               class="btn btn-info btn-sm text-light">Редактировать</a>
+                        {% endif %}
 
                     </div>
                 </div>

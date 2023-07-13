@@ -31,3 +31,4 @@ def init_hooks(app):
             user = current_user
             user.last_active = datetime.now()
             db.session.commit()
+

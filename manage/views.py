@@ -112,7 +112,7 @@ def choice_project():
 @bp.route('/', methods=('POST', 'GET'))
 @bp.route('/<board_id>', methods=('POST', 'GET'))
 @bp.route('/<board_id>/task/<int:task_id>', methods=('POST', 'GET'))
-# @login_required
+@login_required
 def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
     project_id = request.cookies.get('project_id', 1)
     project = Project.query.get_or_404(project_id)
@@ -183,9 +183,9 @@ def index(board_id: int = 'Actual', task_id: int = None, user_id: int = None):
                            search_task_form=search_task_form)
 
 
-
 @bp.route('/tasks/user/<int:user_id>', methods=('POST', 'GET'))
 @bp.route('/task/<int:task_id>/user/<int:user_id>', methods=('POST', 'GET'))
+@login_required
 def user_tasks(user_id: int, task_id: int = None):
     user = Users.query.get_or_404(user_id)
     project_id = request.cookies.get('project_id', 1)
@@ -308,7 +308,7 @@ def get_users():
 
 @bp.route('/users/edit/<int:user_id>', methods=('POST', 'GET'))
 @bp.route('/users/new', methods=('POST', 'GET'))
-@roles_required('admin, super')
+@roles_required('super')
 @login_required
 def user_edit(user_id: int = None):
     counter = counter_tasks()
@@ -326,6 +326,7 @@ def user_edit(user_id: int = None):
             db.session.add(user)
             db.session.commit()
             user.add_roles(request.form.getlist('roles'))
+            user.add_projects(request.form.getlist('project'))
 
             return redirect(url_for('.user_edit', user_id=user.id))
         else:

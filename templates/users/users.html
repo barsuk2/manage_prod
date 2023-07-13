@@ -31,6 +31,7 @@
                 <th class="col-auto border-start">Имя</th>
                 <th class="col-1 border-start">Email</th>
                 <th class="col-1 border-start">Роли</th>
+                <th class="col-1 border-start">Участие в проектах</th>
             </tr>
             </thead>
             {% for user in users %}
@@ -41,7 +42,8 @@
                     <td class="border-start"><a href="{{ url_for('.user_profile', user_id=user.id) }}">{{ user.name }}</a>
                     </td>
                     <td class="border-start fs-6">{{ user.email }}</td>
-                    <td class="border-start text-nowrap ">{{ user.role.roles }}</td>
+                    <td class="border-start text-nowrap ">{{ user.role.roles or ''}}</td>
+                    <td class="border-start text-nowrap ">{{ user.role.project_membership or '' }}</td>
                 </tr>
             {% endfor %}
         </table>

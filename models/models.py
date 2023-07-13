@@ -34,6 +34,12 @@ class Users(db.Model, UserMixin, storage.Entity):
             return False
         return True
 
+    def participates_projects(self, projects: str) -> True:
+        r_ = [True for project in projects.split(',') if project.strip() in self.role.roles]
+        if not any(r_):
+            return False
+        return True
+
     @staticmethod
     def hash_password(data):
         return hashlib.md5((str(data) + current_app.config['SECRET_KEY']).encode()).hexdigest()
@@ -61,6 +67,14 @@ class Users(db.Model, UserMixin, storage.Entity):
             roles_user.roles = roles
         db.session.commit()
 
+    def add_projects(self, projects: list):
+        roles_user = Roles.query.filter(Roles.user_id == self.id).first()
+        if not roles_user:
+            db.session.add(Roles(user_id=self.id, project_membership=projects))
+        else:
+            roles_user.project_membership = projects
+        db.session.commit()
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -71,6 +85,8 @@ class Project(db.Model):
     __tablename__ = 'projects'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String)
+    title_en = db.Column(db.String)
+    description = db.Column(db.String)
 
     task = db.relationship('Task', back_populates='project')
 
@@ -163,6 +179,7 @@ class Roles(db.Model):
                         primary_key=True)
     created = db.Column(db.DateTime(timezone=True), server_default=db.text('now()'), nullable=False)
     roles = db.Column(ARRAY(db.String(32), zero_indexes=True))
+    project_membership = db.Column(ARRAY(db.String(32), zero_indexes=True))
 
     def get_roles(self):
         return json.dumps(self.roles)

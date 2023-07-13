@@ -120,18 +120,24 @@
             <div class="dropdown">
                 <button class="btn dropdown-toggle text-light" type="button" id="dropdownMenuButton1"
                         data-bs-toggle="dropdown" aria-expanded="false">
-                    <i class="fa fa-flag mx-3 "></i>сменить проект
+                    <i class="fa fa-flag mx-3 text-warning"></i>Сменить проект
                 </button>
                 <form action="" method="post"></form>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                     {% for project in projects %}
+                        {% if current_user.is_authenticated and project.id |string in current_user.role.project_membership %}
                         <li><a href="{{ url_for('.choice_project', project_id=project.id) }}"
                                class="dropdown-item">{{ project.title }}</a></li>
+                {% endif %}
+
                     {% endfor %}
+                {% if current_user.is_authenticated and current_user.has_role('super') %}
                     <li>
                         <hr class="dropdown-divider">
                     </li>
                     <li><a href="#modal-add-category"  data-bs-toggle="modal" class="btn">Добавить проект</a></li>
+                {% endif %}
+
                 </ul>
             </div>
 
