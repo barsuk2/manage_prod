@@ -87,7 +87,6 @@ def search_task(tasks: Task, word: str):
 def add_proj():
     """ Добавить новый проект"""
     new_proj = request.args.get('project')
-    print(new_proj)
     if not Project.query.filter(Project.title == new_proj.capitalize()).first():
         proj = Project(title=new_proj.capitalize())
         db.session.add(proj)

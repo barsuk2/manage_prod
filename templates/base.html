@@ -152,10 +152,7 @@
                     <i class="fa fa-user-circle-o mx-2 "></i>Здравствуйте, {{ current_user.name }}
                 </button>
                 <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                    <li><a class="dropdown-item" href="">Мои задачи</a></li>
-                    <li>
-                        <hr class="dropdown-divider">
-                    </li>
+
                     <li><a href="{{ url_for('.logout') }}" class="btn">Logout</a></li>
                 </ul>
             </div>

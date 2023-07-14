@@ -64,8 +64,7 @@
                             <li class="list-group-item">
                                 <h4>Права:</h4>
 
-                                    Прав на сайте нет.
-                            </li>
+                                    {{ user.role.roles or 'не установлено'}}
                         </ul>
                     </div>
                 </div>
