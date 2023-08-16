@@ -62,7 +62,7 @@
                 <th class="col border-start">Исполнитель</th>
                 <th class="col border-start">Дедлайн</th>
                 <th class="col border-start">Естимейт</th>
-                <th class="col border-start " title="Важность"><i
+                <th class="col-auto border-start " title="Важность"><i
                         class="fa fa-exclamation-triangle fa-1x text-danger"></i></th>
                 <th class="col border-start">Этап</th>
                 {% if board_id == 'Complete' %}
@@ -251,7 +251,6 @@
             let $task = $('tr#task'), $block_task_manage = $('.task.manage'), $block_task_history = $('.task.history'),
                 $block_task_comment = $('.task.comment'), board = '{{ board_id }}', createtask = '{{ create_task }}' ;
 
-
             $block_task_comment.hide()
             $block_task_history.hide()
             $block_task_manage.show()
@@ -262,14 +261,14 @@
                 $('#history').addClass('invisible')
             }
 
-
-
             // В зависимости от важности покрасим строки таблицы
             $task.each(function () {
                 if ($(this).find('#importance i').hasClass('text-danger')) {
                     $(this).find('#id').addClass('border-start border-5 border-danger')
                 } else if ($(this).find('#importance i').hasClass('text-success')) {
                     $(this).find('#id').addClass('border-start border-5 border-success')
+                } else if ($(this).find('#importance i').hasClass('text-warning')) {
+                    $(this).find('#id').addClass('border-start border-5 border-warning')
                 }
             });
 

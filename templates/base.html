@@ -78,16 +78,15 @@
     {% if importent == 'high' %}
         <span title="Важность высокая">
     <i class="text-danger fa {{ size }} fa-long-arrow-up" aria-hidden="false"></i>
-    <i class="text-danger fa {{ size }} fa-long-arrow-up" aria-hidden="false"></i>
     </span>
     {% elif importent == 'medium' %}
-        {% set class_ = 'text-danger fa-long-arrow-up' %}
+        {% set class_ = 'text-warning fa-long-arrow-up' %}
         {% set title="Важность средняя" %}
     {% elif importent == 'normal' %}
         {% set class_ = 'fa-long-arrow-up text-success' %}
         {% set title="Важность нормальная" %}
     {% elif importent == 'low' %}
-        {% set class_ = 'fa-long-arrow-down text-success' %}
+        {% set class_ = 'fa-long-arrow-down text-secondary' %}
         {% set title="Важность низкая" %}
     {% endif %}
     <i class="fa {{ size }} {{ class_ }} " aria-hidden="false" title="{{ title }}"></i>
