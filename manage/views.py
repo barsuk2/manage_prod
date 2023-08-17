@@ -440,38 +440,35 @@ def get_statistic_task():
                            diagrams_by_months=diagrams_by_months, form=form)
 
 
-def extract_pdf():
-    from pypdf import PdfReader
-    from pypdf import PdfWriter
-    reader = PdfReader("/home/egor/PDF/Page_2.pdf")
-    for i in range(1):
-        page = reader.pages[i]
-        writer = PdfWriter()
-        writer.add_page(page)
-        with open(f'/home/egor/PDF/Page_{i+1}.pdf', 'wb') as outfile:
-            writer.write(outfile)
+# def extract_pdf():
+#     from pypdf import PdfReader
+#     from pypdf import PdfWriter
+#     reader = PdfReader("/home/egor/PDF/Page_2.pdf")
+#     for i in range(1):
+#         page = reader.pages[i]
+#         writer = PdfWriter()
+#         writer.add_page(page)
+#         with open(f'/home/egor/PDF/Page_{i+1}.pdf', 'wb') as outfile:
+#             writer.write(outfile)
+#
+#         # import module
+#     from pdf2image import convert_from_path
+#
+#     # Store Pdf with convert_from_path function
+#     images = convert_from_path('/home/egor/PDF/Page_1.pdf')
+#     print(images)
+#
+#     for i in range(len(images)):
+#         # Save pages as images in the pdf
+#         images[i].save('/home/egor/PDF/ASD_' + str(i) + '.jpg', 'JPEG')
+#
+#     import pytesseract
+#     from PIL import Image
+#     pytesseract.pytesseract.tesseract_cmd = r'/srv/manage_prod/tesseract'
+#
+#     with Image.open('/home/egor/PDF/ASD0.jpg') as im:
+#         string = pytesseract.image_to_string(im)
+#         # печатаем
+#         print(string)
 
-        # import module
-    from pdf2image import convert_from_path
 
-    # Store Pdf with convert_from_path function
-    images = convert_from_path('/home/egor/PDF/Page_1.pdf')
-    print(images)
-
-    for i in range(len(images)):
-        # Save pages as images in the pdf
-        images[i].save('/home/egor/PDF/ASD_' + str(i) + '.jpg', 'JPEG')
-
-    import pytesseract
-    from PIL import Image
-    pytesseract.pytesseract.tesseract_cmd = r'/srv/manage_prod/tesseract'
-
-    with Image.open('/home/egor/PDF/ASD0.jpg') as im:
-        string = pytesseract.image_to_string(im)
-        # печатаем
-        print(string)
-
-
-@bp.route('/list_reference')
-def get_list_reference():
-    return render_template('hu/index.html')

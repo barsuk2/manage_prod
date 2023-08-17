@@ -1,7 +1,6 @@
 from flask import Flask
 
 from manage import bp
-from core import db, login_manager, storage
 from core import csrf
 from models import *
 from jinja_filter import filters
