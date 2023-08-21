@@ -183,3 +183,38 @@ class Roles(db.Model):
 
     def get_roles(self):
         return json.dumps(self.roles)
+
+
+class Student(db.Model):
+    __tablename__ = 'students'
+    # surname, name, patronymic - фамилия, имя, отчество
+
+    id = db.Column(db.Integer(), primary_key=True)
+    name = db.Column(db.String, nullable=False)
+    patronymic = db.Column(db.String)
+    surname = db.Column(db.String, nullable=False)
+    grade = db.Column(db.Integer()) # в каком классе
+    birthday = db.Column(db.Date(), nullable=False)
+    address = db.Column(db.String)
+
+    birth_certificate_series = db.Column(db.String)
+    birth_certificate_number = db.Column(db.String)
+    birth_certificate_date = db.Column(db.String)
+    birth_certificate_organization = db.Column(db.String)
+
+    student_passport_series = db.Column(db.String)
+    student_passport_number = db.Column(db.String)
+    student_passport_date = db.Column(db.Date())
+    student_passport_certifying_organization = db.Column(db.String)
+
+    parent_name = db.Column(db.String)
+    parent_patronymic = db.Column(db.String)
+    parent_surname = db.Column(db.String)
+    parent_birthday = db.Column(db.Date())
+    parent_passport_number = db.Column(db.String)
+    parent_passport_date = db.Column(db.Date())
+    parent_passport_certifying_organization = db.Column(db.String)
+    parent_email = db.Column(db.String)
+    parent_phone = db.Column(db.String)
+
+
